@@ -11,7 +11,7 @@ stages:
 pylint:
   stage: Static Analysis
   script:
-  - pylint -d C0301 src/*.py
+  - pylint -d --exit-zero C0301 src/*.py
 
 pytest:
   stage: Test
