@@ -10,8 +10,9 @@ stages:
 
 pylint:
   stage: Static Analysis
+  allow_failure: true
   script:
-  - pylint -d --exit-zero C0301 src/*.py
+  - pylint -d C0301 src/*.py
 
 pytest:
   stage: Test
