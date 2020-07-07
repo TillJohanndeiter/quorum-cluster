@@ -4,7 +4,7 @@ from src.adder import Adder
 
 
 class AdderCase(unittest.TestCase):
-    def add(self):
+    def test_add(self):
         adder = Adder()
         self.assertEqual(adder.add(3, 5), 8)
 
