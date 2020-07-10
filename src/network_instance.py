@@ -12,6 +12,7 @@ class NetworkInformation:
 
 class NetworkInstance(FlaskView):
     def __init__(self, address: NetworkInformation = None):
+        self.server_thread = Process(target=self.__start)
         self.app = Flask(__name__)
         self.address = address
         self.status = None
@@ -29,7 +30,6 @@ class NetworkInstance(FlaskView):
         return 'hello'
 
     def start(self):
-        self.server_thread = Process(target=self.__start)
         self.server_thread.start()
 
     def end(self):
