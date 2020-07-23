@@ -1,35 +1,44 @@
+import json
+import time
+
 from flask import Flask
-from flask_classful import FlaskView, route
 from multiprocessing import Process
+from perfume import Perfume, route
+from src.node_behavior import NodeStrategy, NormalStrategy
 
 
 class NetworkInformation:
 
-    def __init__(self, ip_address, port):
-        self.host = ip_address
+    def __init__(self, ip_address='0.0.0.0', port=8080):
+        self.ipAddress = ip_address
         self.port = port
 
 
-class NetworkInstance(FlaskView):
-    def __init__(self, address: NetworkInformation = None):
+class NetworkInstance(Perfume):
+
+    def __init__(self, ownAddress: NetworkInformation = None, masterAddress: NetworkInformation = None,
+                 nodeStrategy: NodeStrategy = None):
+
         self.server_thread = Process(target=self.__start)
         self.app = Flask(__name__)
-        self.address = address
-        self.status = None
-
-    @route('/address')
-    def get_address(self):
-        return self.address
-
-    @route('/role')
-    def get_role(self):
-        raise NotImplementedError("Please Implement this method")
+        self.startTime = time.time()
+        self.ownAddress = ownAddress
+        self.masterAddress = masterAddress
+        self.nodeStrategy = nodeStrategy
 
     @route('/')
-    def get_hello(self):
-        return 'hello'
+    def get_info(self):
+        print(self.ownAddress)
+        r = {
+            'host': self.ownAddress.ipAddress,
+            'port': self.ownAddress.port,
+            'status': self.nodeStrategy.get_role(),
+            'running': (time.time() - self.startTime)
+        }
+        return json.dumps(r)
 
     def start(self):
+        NetworkInstance.register(self.app, route_base='/')
         self.server_thread.start()
 
     def end(self):
@@ -37,27 +46,34 @@ class NetworkInstance(FlaskView):
         self.server_thread.join()
 
     def __start(self):
-        return self.app.run(host=self.address.host, port=self.address.port)
+        return self.app.run(host=self.ownAddress.ipAddress, port=self.ownAddress.port)
 
 
-class VotingDisk(NetworkInstance):
+class Node(NetworkInstance):
 
-    @route('/role')
-    def get_role(self):
-        return 'votingDisk'
+    def __init__(self, ownAddress: NetworkInformation, masterAddress: NetworkInformation,
+                 nodeStrategy: NodeStrategy):
+        super().__init__(ownAddress, masterAddress)
+        self.nodeStrategy = nodeStrategy
+
+    @route('/')
+    def get_info(self):
+        print(self.ownAddress)
+        r = {
+            'host': self.ownAddress.ipAddress,
+            'port': self.ownAddress.port,
+            'status': self.nodeStrategy.get_role(),
+            'running': (time.time() - self.startTime)
+        }
+        return json.dumps(r)
 
     def start(self):
-        print('Start VotingDisk')
-        VotingDisk.register(self.app, route_base='/')
-        super(VotingDisk, self).start()
+        Node.register(self.app, route_base='/')
+        super(Node, self).start()
 
 
-class Client(NetworkInstance):
-    @route('/role')
-    def get_role(self):
-        return 'client'
-
-    def start(self):
-        print('Start Client')
-        Client.register(self.app, route_base='/')
-        super(Client, self).start()
+if __name__ == '__main__':
+    ownAddress = NetworkInformation()
+    # node = Node(ownAddress=ownAddress, masterAddress=ownAddress, nodeStrategy=NormalStrategy(ownAddress))
+    node = NetworkInstance(ownAddress, ownAddress, NormalStrategy())
+    node.run()
