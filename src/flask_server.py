@@ -5,7 +5,7 @@ from flask import Flask
 from src.node_behavior import NormalStrategy
 
 
-class NetworkInformation:
+class NetAddressInformation:
     def __init__(self, ip_address='0.0.0.0', port=3030):
         self.ipAddress = ip_address
         self.port = port
@@ -13,8 +13,9 @@ class NetworkInformation:
 
 app = Flask(__name__)
 startTime = time.time()
-ownAddress = NetworkInformation()
-masterAddress = NetworkInformation()
+#TODO: cmd line arguments
+ownAddress = NetAddressInformation()
+masterAddress = NetAddressInformation()
 nodeStrategy = NormalStrategy()
 nodeCommunicator = None
 server_thread = None
