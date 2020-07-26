@@ -2,29 +2,21 @@ import json
 import time
 
 from flask import Flask
+
+from src.beans import NetAddress
 from src.node_behavior import NormalStrategy
-
-
-class NetAddressInformation:
-    def __init__(self, ip_address='0.0.0.0', port=3030):
-        self.ipAddress = ip_address
-        self.port = port
-
 
 app = Flask(__name__)
 startTime = time.time()
-#TODO: cmd line arguments
-ownAddress = NetAddressInformation()
-masterAddress = NetAddressInformation()
+ownAddress = NetAddress()
+masterAddress = NetAddress()
 nodeStrategy = NormalStrategy()
-nodeCommunicator = None
-server_thread = None
 
 
 @app.route('/')
 def get_info():
     r = {
-        'host': ownAddress.ipAddress,
+        'host': ownAddress.ip_address,
         'port': ownAddress.port,
         'status': nodeStrategy.get_role(),
         'running': (time.time() - startTime)
@@ -32,6 +24,5 @@ def get_info():
     return json.dumps(r)
 
 
-
 if __name__ == '__main__':
-    app.run(host=ownAddress.ipAddress, port=ownAddress.port)
+    app.run(host=ownAddress.ip_address, port=ownAddress.port)

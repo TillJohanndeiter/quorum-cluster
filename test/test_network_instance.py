@@ -1,7 +1,10 @@
 import unittest
 import time
-from src.SocketCommunicator import SocketCommunicator
-from src.flask_server import NetAddressInformation
+from src.pinger import PingMan
+from src.beans import NetAddress, NodeInformation
+from src.message_dict import MessageDict
+
+DUMMY_DICT = MessageDict()
 
 
 class SocketCommunicatorTestCase(unittest.TestCase):
@@ -10,17 +13,17 @@ class SocketCommunicatorTestCase(unittest.TestCase):
         pass
 
     def test_connection(self):
-        aliceAddress = NetAddressInformation(port=8080)
-        bobsAddress = NetAddressInformation(port=7070)
-        alice = SocketCommunicator(aliceAddress, connected=[bobsAddress])
-        self.assertEqual(alice.connected, [bobsAddress])
+        alice_information = NodeInformation(NetAddress(port=4040), status='OK', name='alice')
+        bob_information = NodeInformation(NetAddress(port=5050), status='OK', name='bob')
+        alice = PingMan(alice_information, DUMMY_DICT, connected=[bob_information])
+        self.assertEqual(alice.connected, [bob_information])
         self.assertEqual(alice.sucDisconnected, [])
         self.assertEqual(alice.failed, [])
-        bob = SocketCommunicator(bobsAddress, )
+        bob = PingMan(bob_information, DUMMY_DICT)
         bob.start()
         alice.start()
         time.sleep(5)
-        self.assertEqual(alice.connected, [bobsAddress])
+        self.assertEqual(alice.connected, [bob_information])
         bob.kill()
         alice.kill()
 
@@ -28,9 +31,9 @@ class SocketCommunicatorTestCase(unittest.TestCase):
         pass
 
     def test_unexpected_shutdown(self):
-        aliceAddress = NetAddressInformation(port=5050, )
-        bobsAddress = NetAddressInformation(port=4040, )
-        alice = SocketCommunicator(aliceAddress, connected=[bobsAddress])
+        aliceAddress = NetAddress(port=5050, )
+        bobsAddress = NetAddress(port=4040, )
+        alice = PingMan(aliceAddress, connected=[bobsAddress])
         self.assertEqual(alice.connected, [bobsAddress])
         alice.start()
         time.sleep(5)

@@ -19,6 +19,7 @@ class MessageDict:
             raise ValueError("Node information is not in dictionary. Please contact coder.")
 
     def add_message_for_node(self, message: str, node: NodeInformation):
+        #print('Add message {} for {} from'.format(message, node.name))
         if node not in self.dict.keys():
             self.dict[node] = queue.Queue()
         self.dict[node].put(message)
@@ -26,6 +27,9 @@ class MessageDict:
     def add_message_for_nodes(self, message: str, nodes: [NodeInformation]):
         for node in nodes:
             self.add_message_for_node(message, node)
+
+    def add_node(self, node : NodeInformation):
+        self.dict[node] = queue.Queue()
 
     def clear(self):
         self.dict.clear()
