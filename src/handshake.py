@@ -5,7 +5,7 @@ from observer import Observable
 from src.beans import NetAddress, NodeInformation, node_information_from_json
 from src.observers import UpdateValue
 
-DEFAULT_BROADCAST = NetAddress(ip_address="<broadcast>", port=5555)
+DEFAULT_BROADCAST = NetAddress(host="<broadcast>", port=5555)
 MESSAGE_LENGTH = 1024
 TIMEOUT_BROADCAST = 0.2
 ENCODE_UTF_8 = 'utf8'
@@ -34,7 +34,7 @@ class Handshaker(Observable):
         time.sleep(1)
         self.broadcast_thread.start()
 
-    def end(self):
+    def kill(self):
         self.running = False
         self.broadcast_thread.join()
         if self.response_socket is not None:
@@ -52,7 +52,7 @@ class Handshaker(Observable):
         self.introduce_socket.settimeout(TIMEOUT_BROADCAST)
         message = self.own_information.to_json()
         self.introduce_socket.sendto(bytes(message, encoding=ENCODE_UTF_8),
-                                     (self.broadcast_Address.ip_address, self.broadcast_Address.port))
+                                     (self.broadcast_Address.host, self.broadcast_Address.port))
         self.introduce_socket.close()
 
     def __collect_exist_nodes(self):
@@ -63,7 +63,7 @@ class Handshaker(Observable):
         while self.running:
             data, addr = self.response_socket.recvfrom(MESSAGE_LENGTH)
             if data != b'':
-                threading.Thread(target=self.__add_node_info_and_send_own(data))
+                threading.Thread(target=self.__add_node_info_and_send_own, args=(data,)).start()
         self.response_socket.close()
 
     def __add_node_info_and_send_own(self, data):

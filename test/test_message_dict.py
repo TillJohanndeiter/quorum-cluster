@@ -1,12 +1,14 @@
 import unittest
+import threading
+import time
+from synchronized_set import SynchronizedSet
 
 from src.beans import NodeInformation, NetAddress
-from src.message_dict import MessageDict, DEFAULT_MESSAGE
+from src.message_dict import MessageDict, DEFAULT_MESSAGE, SEPARATOR, DISPATCH_MESSAGE
 
-alice_information = NodeInformation(NetAddress(port=4040), status='OK', name='alice')
-bob_information = NodeInformation(NetAddress(port=5050), status='OK', name='bob')
-peter_information = NodeInformation(NetAddress(port=6060), status='OK', name='peter')
-all_information = [alice_information, bob_information, peter_information]
+alice_information = NodeInformation(NetAddress(port=4040), name='alice')
+bob_information = NodeInformation(NetAddress(port=5050), name='bob')
+peter_information = NodeInformation(NetAddress(port=6060), name='peter')
 
 
 class MessageDictTestCase(unittest.TestCase):
@@ -22,8 +24,11 @@ class MessageDictTestCase(unittest.TestCase):
 
     def test_add_multiple_nodes(self):
         message_dict = MessageDict()
-        message_dict.add_message_for_nodes("test", all_information)
-        message_dict.add_message_for_nodes("test2", all_information)
+        message_dict.add_node(alice_information)
+        message_dict.add_node(bob_information)
+        message_dict.add_node(peter_information)
+        message_dict.add_message_for_all_nodes("test")
+        message_dict.add_message_for_all_nodes("test2")
         self.assertEqual('test', message_dict.get_next_message(alice_information))
         self.assertEqual('test2', message_dict.get_next_message(alice_information))
         self.assertEqual('test', message_dict.get_next_message(bob_information))
@@ -42,7 +47,23 @@ class MessageDictTestCase(unittest.TestCase):
         message_dict.add_message_for_node("test", alice_information)
         nextMsg = message_dict.get_next_message(alice_information)
         self.assertEqual('test', nextMsg)
-        self.assertEqual(DEFAULT_MESSAGE, message_dict.get_next_message(alice_information))
+        self.assertEqual(DEFAULT_MESSAGE + SEPARATOR, message_dict.get_next_message(alice_information))
+
+    def test_wait_unit_all_received(self):
+        message_dict = MessageDict()
+        message_dict.add_node(bob_information)
+        message_dict.add_node(peter_information)
+        message_dict.add_dispatch_message(alice_information, SynchronizedSet(set()))
+        t = threading.Thread(target=self.take_message, args=(message_dict,))
+        t.start()
+        message_dict.wait_unit_everybody_received(DISPATCH_MESSAGE + SEPARATOR + alice_information.to_json())
+
+
+
+    def take_message(self, message_dict):
+        time.sleep(1)
+        message_dict.get_next_message(bob_information)
+        message_dict.get_next_message(peter_information)
 
 
 if __name__ == '__main__':
