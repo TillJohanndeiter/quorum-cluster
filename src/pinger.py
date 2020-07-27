@@ -94,14 +94,15 @@ class PingMan(Observable):
         ping_counter = 0
         suc_connected = False
         message = self.message_dict.get_next_message(target)
-        while self.running and target in self.connected and ping_counter < MAX_PING_TRY and not suc_connected:
+        while not suc_connected and self.running and target in self.connected and ping_counter < MAX_PING_TRY:
             try:
                 self.client_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
                 self.client_socket.connect(target_address.to_tuple())
                 print("{} send message : \n {} \n to {}".format(self.ownInformation.name, message, target.name))
                 self.client_socket.send(bytes(message, ENCODE_UTF_8))
                 suc_connected = True
-            except:
+            except Exception as e:
+                print(e)
                 ping_counter += 1
                 time.sleep(SECOND_INTERVAL_PING_TRY)
             finally:
@@ -117,6 +118,7 @@ class PingMan(Observable):
 
         while self.running:
             copy = self.connected.copy()
+            """
             for target in copy:
                 t = Thread(target=self.__send_ping_to_target, args=(target,))
                 ping_thread.append(t)
@@ -124,8 +126,11 @@ class PingMan(Observable):
 
             for t in ping_thread:
                 t.join()
+            """
+            for target in copy:
+                self.__send_ping_to_target(target)
 
-            time.sleep(3)
+            time.sleep(SECOND_INTERVAL_PING_TRY * MAX_PING_TRY * len(copy) + 3)
 
     def __start_server_socket(self):
         return self.__set_up_server_socket()
