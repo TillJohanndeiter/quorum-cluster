@@ -68,7 +68,7 @@ class PingMan(Observable):
                         msg = self.read_number_of_bytes(in_socket, msg_len)
                         if msg is not None:
                             msg = msg.decode(UTF_8)
-                            print('{} received msg: \n {} \n'.format(self.own_information.name, msg))
+                            #print('{} received msg: \n {} \n'.format(self.own_information.name, msg))
                             if msg != '':
                                 self.notify(UpdateValue(INCOMING_MESSAGE, msg))
                     if in_socket is not None:
@@ -97,7 +97,7 @@ class PingMan(Observable):
             msg = self.read_number_of_bytes(in_socket, msg_len)
             if msg is not None:
                 msg = msg.decode(UTF_8)
-                print('{} received msg: \n {} \n'.format(self.own_information.name, msg))
+                #print('{} received msg: \n {} \n'.format(self.own_information.name, msg))
                 self.notify(UpdateValue(INCOMING_MESSAGE, msg))
         in_socket.close()
 
@@ -128,8 +128,8 @@ class PingMan(Observable):
         if ping_counter == MAX_PING_TRY and target in self.connected:
             print('{} could not send \n {}  \n to send to {}'.format(self.own_information.name, message, target.name))
             self.notify(UpdateValue(CONNECTION_LOST, target))
-        else:
-            print('{} send \n {}  \n to send to {}'.format(self.own_information.name, message, target.name))
+        #else:
+            # print('{} send \n {}  \n to send to {}'.format(self.own_information.name, message, target.name))
 
     def __send_ping_to_all(self):
 
