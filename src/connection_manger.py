@@ -1,16 +1,20 @@
-from synchronized_set import SynchronizedSet
 import time
 
+from collections import Counter
+from synchronized_set import SynchronizedSet
 from observer import Observer
-from src.message_dict import MessageDict, DEFAULT_MESSAGE, DISPATCH_MESSAGE, SEPARATOR, HANDSHAKE_MESSAGE, VOTE_MESSAGE
+
+from src.message_dict import MessageDict, DEFAULT_MESSAGE, DISPATCH_MESSAGE, \
+    SEPARATOR, HANDSHAKE_MESSAGE, VOTE_MESSAGE
 from src.pinger import INCOMING_MESSAGE, CONNECTION_LOST, PingMan
 from src.handshake import NEW_ENTERING_NODE, Handshaker
 from src.beans import NodeInformation, node_information_from_json
 from src.vote_strategy import TimeStrategy
-from collections import Counter
 
 TIME_BETWEEN_HANDSHAKE = 2
 
+
+#TODO: Move voting actions to own class
 
 class NodeManger(Observer):
 
@@ -44,11 +48,13 @@ class NodeManger(Observer):
     def dispatch(self):
         self.handshaker.kill()
         self.message_dict.add_dispatch_message(self.own_information, self.connected)
-        self.message_dict.wait_unit_everybody_received(DISPATCH_MESSAGE + SEPARATOR + self.own_information.to_json())
+        self.message_dict.wait_unit_everybody_received(self.own_dispatch_message())
         self.connected.clear()
         self.ping_man.kill()
         self.running = False
 
+    def own_dispatch_message(self):
+        return DISPATCH_MESSAGE + SEPARATOR + self.own_information.to_json()
 
     def update(self, new_value):
         new_value = new_value[0]
@@ -77,7 +83,9 @@ class NodeManger(Observer):
         copy.add(self.own_information)
         voted_for = self.vote_strategy.get_best_node(copy)
         print('{} want {} as new master'.format(self.own_information.name, voted_for.name))
-        self.message_dict.add_vote(voted_node=voted_for, own_info=self.own_information, node_information=self.connected)
+        self.message_dict.add_vote(voted_node=voted_for,
+                                   own_info=self.own_information,
+                                   node_information=self.connected)
         self.voting_dict[self.own_information] = voted_for
         self.eval_votes_and_make_new_master(copy)
 
@@ -85,15 +93,15 @@ class NodeManger(Observer):
 
         msg = str(new_value.value)
 
-        type = msg.split(SEPARATOR)[0]
+        subject = msg.split(SEPARATOR)[0]
 
-        if type == DEFAULT_MESSAGE:
+        if subject == DEFAULT_MESSAGE:
             return
 
         json = msg.split(SEPARATOR)[1]
         node_info = node_information_from_json(json)
 
-        if type == DISPATCH_MESSAGE:
+        if subject == DISPATCH_MESSAGE:
             print('{} Dispatched from {}'.format(self.own_information.name, node_info.name))
             if node_info in self.connected:
                 self.connected.remove(node_info)
@@ -101,7 +109,7 @@ class NodeManger(Observer):
                 self.lost.remove(node_info)
             self.dispatched.add(node_info)
             self.calc_new_master_and_add_message()
-        elif type == HANDSHAKE_MESSAGE:
+        elif subject == HANDSHAKE_MESSAGE:
             if node_info != self.own_information:
                 self.message_dict.add_node(node_info)
                 self.connected.add(node_info)
@@ -112,11 +120,12 @@ class NodeManger(Observer):
             if node_info in self.lost:
                 self.lost.remove(node_info)
             self.calc_new_master_and_add_message()
-        elif type == VOTE_MESSAGE:
+        elif subject == VOTE_MESSAGE:
             voted_from = node_info
             json = msg.split(SEPARATOR)[2]
             voted_node = node_information_from_json(json)
-            print('{} get vote from {} voted for {}'.format(self.own_information.name, voted_from.name, voted_node.name))
+            print(
+                '{} get vote from {} voted for {}'.format(self.own_information.name, voted_from.name, voted_node.name))
             self.voting_dict[voted_from] = voted_node
             copy_connected = self.connected.copy()
             copy_connected.add(self.own_information)

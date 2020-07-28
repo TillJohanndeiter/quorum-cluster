@@ -1,12 +1,13 @@
 import struct
-from socket import *
 import time
-from synchronized_set import SynchronizedSet
 from threading import Thread
+from socket import AF_INET, SOCK_STREAM, IPPROTO_TCP, SOMAXCONN, SHUT_RDWR, socket, timeout
+from synchronized_set import SynchronizedSet
+from observer import Observable
 from src.message_dict import MessageDict
 from src.observers import UpdateValue
 from src.beans import NodeInformation
-from observer import Observable
+
 
 NEW_EXISTING_NODE = 'HANDSHAKE_WITH_EXISTING_BEFORE'
 INCOMING_MESSAGE = 'INCOMING_MESSAGE'
@@ -21,7 +22,8 @@ UTF_8 = 'utf8'
 
 class PingMan(Observable):
 
-    def __init__(self, own_information: NodeInformation, message_dict: MessageDict, connected: SynchronizedSet):
+    def __init__(self, own_information: NodeInformation, message_dict: MessageDict,
+                 connected: SynchronizedSet):
         super().__init__()
         self.own_information = own_information
         self.message_dict = message_dict
@@ -60,11 +62,11 @@ class PingMan(Observable):
 
             while self.running:
                 try:
-                    in_socket, addr = self.server_socket.accept()
-                    raw_msglen = self.recvall(in_socket, 4)
+                    in_socket, _ = self.server_socket.accept()
+                    raw_msglen = self.read_number_of_bytes(in_socket, 4)
                     if raw_msglen:
                         msg_len = struct.unpack('>I', raw_msglen)[0]
-                        msg = self.recvall(in_socket, msg_len)
+                        msg = self.read_number_of_bytes(in_socket, msg_len)
                         if msg is not None:
                             msg = msg.decode(UTF_8)
                             print('{} received msg: \n {} \n'.format(self.own_information.name, msg))
@@ -78,11 +80,10 @@ class PingMan(Observable):
         finally:
             self.server_socket.close()
 
-    def recvall(self, sock, n):
-        # Helper function to recv n bytes or return None if EOF is hit
+    def read_number_of_bytes(self, sock, num_bytes_to_read):
         data = bytearray()
-        while len(data) < n:
-            packet = sock.recv(n - len(data))
+        while len(data) < num_bytes_to_read:
+            packet = sock.recv(num_bytes_to_read - len(data))
             if not packet:
                 return None
             data.extend(packet)
@@ -90,10 +91,10 @@ class PingMan(Observable):
 
     def update_message(self, in_socket: socket):
 
-        raw_msglen = self.recvall(in_socket, 4)
+        raw_msglen = self.read_number_of_bytes(in_socket, 4)
         if raw_msglen:
             msg_len = struct.unpack('>I', raw_msglen)[0]
-            msg = self.recvall(in_socket, msg_len)
+            msg = self.read_number_of_bytes(in_socket, msg_len)
             if msg is not None:
                 msg = msg.decode(UTF_8)
                 print('{} received msg: \n {} \n'.format(self.own_information.name, msg))
@@ -107,14 +108,17 @@ class PingMan(Observable):
         message = self.message_dict.get_next_message(target)
         message_with_header = struct.pack('>I', len(message)) + message.encode(UTF_8)
         client_socket = None
-        while not suc_connected and self.running and target in self.connected and ping_counter < MAX_PING_TRY:
+        while not suc_connected \
+                and self.running \
+                and target in self.connected \
+                and ping_counter < MAX_PING_TRY:
+
             try:
                 client_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
                 client_socket.connect(target_address.to_tuple())
                 client_socket.sendall(message_with_header)
                 suc_connected = True
-            except Exception as e:
-                print(e)
+            except:
                 ping_counter += 1
                 time.sleep(SECOND_INTERVAL_PING_TRY)
             finally:
@@ -131,13 +135,13 @@ class PingMan(Observable):
 
         while self.running:
             copy = self.connected.copy()
-            ping_thread = []
+            ping_threads = []
             for target in copy:
-                t = Thread(target=self.__send_ping_to_target, args=(target,))
-                ping_thread.append(t)
-                t.start()
+                target_ping_thread = Thread(target=self.__send_ping_to_target, args=(target,))
+                ping_threads.append(target_ping_thread)
+                target_ping_thread.start()
 
-            for t in ping_thread:
-                t.join()
+            for target_ping_thread in ping_threads:
+                target_ping_thread.join()
 
             time.sleep(2)

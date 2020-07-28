@@ -1,7 +1,5 @@
 import json
 import time
-from json.decoder import JSONDecodeError
-
 
 class NetAddress:
     def __init__(self, host='localhost', port=3030):
@@ -50,15 +48,11 @@ class NodeInformation:
 
 
 def node_information_from_json(json_string) -> NodeInformation:
-    try:
-        node_info_dict = json.loads(json_string)
-        net_address = NetAddress(**node_info_dict['net_address'])
-        node_info_obj = NodeInformation(**node_info_dict)
-        node_info_obj.net_address = net_address
-        return node_info_obj
-    except Exception as e:
-        print(e)
-        print('Faulty json: \n{} \n'.format(json_string))
+    node_info_dict = json.loads(json_string)
+    net_address = NetAddress(**node_info_dict['net_address'])
+    node_info_obj = NodeInformation(**node_info_dict)
+    node_info_obj.net_address = net_address
+    return node_info_obj
 
 
 def net_address_information_from_json(json_string) -> NetAddress:

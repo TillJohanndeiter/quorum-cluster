@@ -9,14 +9,14 @@ from src.message_dict import MessageDict
 from src.pinger import PingMan
 
 
-def create_node_manger(address : str, port : int, name=None) -> NodeManger:
+def create_node_manger(address: str, port: int, name=None) -> NodeManger:
     address_info = NetAddress(host=address, port=port)
     node_info = NodeInformation(address_info, birthtime=time.time(), name=name)
     manager = create_node_manger_by_node_info(node_info)
     return manager
 
 
-def create_node_manger_by_node_info(node_info : NodeInformation) -> NodeManger:
+def create_node_manger_by_node_info(node_info: NodeInformation) -> NodeManger:
     message_dict = MessageDict()
     connected_set = synchronized_set.SynchronizedSet(set())
     handshaker = Handshaker(own_information=node_info)

@@ -1,7 +1,10 @@
-from socket import *
 import time
 import threading
+
+from socket import socket, AF_INET, SOCK_DGRAM, IPPROTO_UDP, SO_BROADCAST, \
+    SOL_SOCKET, SO_REUSEPORT, SHUT_RDWR, error
 from observer import Observable
+
 from src.beans import NetAddress, NodeInformation, node_information_from_json
 from src.observers import UpdateValue
 
@@ -16,12 +19,10 @@ class Handshaker(Observable):
 
     def __init__(self,
                  own_information: NodeInformation,
-                 broadcast_address: NetAddress = DEFAULT_BROADCAST,
-                 birthtime=time.time()):
+                 broadcast_address: NetAddress = DEFAULT_BROADCAST):
         super(Handshaker, self).__init__()
         self.own_information = own_information
-        self.broadcast_Address = broadcast_address
-        self.birthtime = birthtime
+        self.broadcast_address = broadcast_address
         self.broadcast_thread = threading.Thread(target=self.__send_broadcast)
         self.collect_thread = threading.Thread(target=self.__collect_entering_node)
         self.running = False
@@ -54,16 +55,16 @@ class Handshaker(Observable):
         self.introduce_socket.settimeout(TIMEOUT_BROADCAST)
         message = self.own_information.to_json()
         self.introduce_socket.sendto(bytes(message, encoding=ENCODE_UTF_8),
-                                     (self.broadcast_Address.host, self.broadcast_Address.port))
+                                     (self.broadcast_address.host, self.broadcast_address.port))
         self.introduce_socket.close()
 
     def __collect_entering_node(self):
         self.response_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
         self.response_socket.setsockopt(SOL_SOCKET, SO_REUSEPORT, 1)
         self.response_socket.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
-        self.response_socket.bind(('', self.broadcast_Address.port))
+        self.response_socket.bind(('', self.broadcast_address.port))
         while self.running:
-            data, addr = self.response_socket.recvfrom(MESSAGE_LENGTH)
+            data, _ = self.response_socket.recvfrom(MESSAGE_LENGTH)
             if data != b'':
                 threading.Thread(target=self.__add_node_info_and_send_own, args=(data,)).start()
         self.response_socket.close()
