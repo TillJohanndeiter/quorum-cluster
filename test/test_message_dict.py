@@ -4,7 +4,7 @@ import time
 from synchronized_set import SynchronizedSet
 
 from src.beans import NodeInformation, NetAddress
-from src.message_dict import MessageDict, DEFAULT_MESSAGE, JSON_SEPARATOR, DISPATCH_MESSAGE
+from src.message_dict import MessageDict, DEFAULT_MESSAGE, DISPATCH_MESSAGE, MESSAGE_SEPARATOR
 
 alice_information = NodeInformation(NetAddress(port=4040), name='alice')
 bob_information = NodeInformation(NetAddress(port=5050), name='bob')
@@ -18,9 +18,7 @@ class MessageDictTestCase(unittest.TestCase):
         message_dict.add_message_for_node("test", alice_information)
         message_dict.add_message_for_node("test2", alice_information)
         nextMsg = message_dict.get_next_message(alice_information)
-        self.assertEqual('test', nextMsg)
-        nextMsg = message_dict.get_next_message(alice_information)
-        self.assertEqual('test2', nextMsg)
+        self.assertEqual('test--__--test2', nextMsg)
 
     def test_add_multiple_nodes(self):
         message_dict = MessageDict()
@@ -29,12 +27,9 @@ class MessageDictTestCase(unittest.TestCase):
         message_dict.add_node(peter_information)
         message_dict.add_message_for_all_nodes("test")
         message_dict.add_message_for_all_nodes("test2")
-        self.assertEqual('test', message_dict.get_next_message(alice_information))
-        self.assertEqual('test2', message_dict.get_next_message(alice_information))
-        self.assertEqual('test', message_dict.get_next_message(bob_information))
-        self.assertEqual('test2', message_dict.get_next_message(bob_information))
-        self.assertEqual('test', message_dict.get_next_message(peter_information))
-        self.assertEqual('test2', message_dict.get_next_message(peter_information))
+        self.assertEqual('test--__--test2', message_dict.get_next_message(alice_information))
+        self.assertEqual('test--__--test2', message_dict.get_next_message(bob_information))
+        self.assertEqual('test--__--test2', message_dict.get_next_message(peter_information))
 
     def test_clear(self):
         message_dict = MessageDict()
@@ -47,7 +42,7 @@ class MessageDictTestCase(unittest.TestCase):
         message_dict.add_message_for_node("test", alice_information)
         nextMsg = message_dict.get_next_message(alice_information)
         self.assertEqual('test', nextMsg)
-        self.assertEqual(DEFAULT_MESSAGE + JSON_SEPARATOR, message_dict.get_next_message(alice_information))
+        self.assertEqual(DEFAULT_MESSAGE + MESSAGE_SEPARATOR, message_dict.get_next_message(alice_information))
 
     def test_wait_unit_all_received(self):
         message_dict = MessageDict()
@@ -56,7 +51,7 @@ class MessageDictTestCase(unittest.TestCase):
         message_dict.add_dispatch_message(alice_information, SynchronizedSet(set()))
         t = threading.Thread(target=self.take_message, args=(message_dict,))
         t.start()
-        message_dict.wait_unit_everybody_received(DISPATCH_MESSAGE + JSON_SEPARATOR + alice_information.to_json())
+        message_dict.wait_unit_everybody_received(DISPATCH_MESSAGE + MESSAGE_SEPARATOR + alice_information.to_json())
 
 
 

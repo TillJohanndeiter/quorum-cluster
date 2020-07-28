@@ -5,7 +5,7 @@ from synchronized_set import SynchronizedSet
 from observer import Observer
 
 from src.message_dict import MessageDict, DEFAULT_MESSAGE, DISPATCH_MESSAGE, \
-    JSON_SEPARATOR, HANDSHAKE_MESSAGE, VOTE_MESSAGE
+    JSON_SEPARATOR, HANDSHAKE_MESSAGE, VOTE_MESSAGE, MESSAGE_SEPARATOR
 from src.pinger import INCOMING_MESSAGE, CONNECTION_LOST, PingMan
 from src.handshake import NEW_ENTERING_NODE, Handshaker
 from src.beans import NodeInformation, node_information_from_json
@@ -14,7 +14,7 @@ from src.vote_strategy import TimeStrategy
 TIME_BETWEEN_HANDSHAKE = 2
 
 
-#TODO: Move voting actions to own class
+# TODO: Move voting actions to own class
 
 class NodeManger(Observer):
 
@@ -62,7 +62,7 @@ class NodeManger(Observer):
         if event == NEW_ENTERING_NODE:
             self.__handle_entering_node(new_value)
         elif event == INCOMING_MESSAGE:
-            self.__handle_message(new_value)
+            self.__handle_messages(new_value)
         elif event == CONNECTION_LOST:
             lost_node = new_value.value
             print('{} lost connection from {}'.format(self.own_information.name, lost_node.name))
@@ -89,18 +89,22 @@ class NodeManger(Observer):
         self.voting_dict[self.own_information] = voted_for
         self.eval_votes_and_make_new_master(copy)
 
-    def __handle_message(self, new_value):
+    def __handle_messages(self, new_value):
+        messages = str(new_value.value).split(MESSAGE_SEPARATOR)
+        messages.sort(key=lambda x: x.startswith(HANDSHAKE_MESSAGE))
+        for message in messages:
+            self.handle_non_default_message(message)
 
-        msg = str(new_value.value)
-
+    def handle_non_default_message(self, msg):
         subject = msg.split(JSON_SEPARATOR)[0]
-
         if subject == DEFAULT_MESSAGE:
             return
-
-        json = msg.split(JSON_SEPARATOR)[1]
+        json = None
+        try:
+            json = msg.split(JSON_SEPARATOR)[1]
+        except:
+            print('Faulty Message : {}'.format(msg))
         node_info = node_information_from_json(json)
-
         if subject == DISPATCH_MESSAGE:
             print('{} Dispatched from {}'.format(self.own_information.name, node_info.name))
             if node_info in self.connected:

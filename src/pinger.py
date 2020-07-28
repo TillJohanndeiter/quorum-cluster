@@ -69,7 +69,8 @@ class PingMan(Observable):
                         if msg is not None:
                             msg = msg.decode(UTF_8)
                             print('{} received msg: \n {} \n'.format(self.own_information.name, msg))
-                            self.notify(UpdateValue(INCOMING_MESSAGE, msg))
+                            if msg != '':
+                                self.notify(UpdateValue(INCOMING_MESSAGE, msg))
                     if in_socket is not None:
                         in_socket.close()
                 except timeout:

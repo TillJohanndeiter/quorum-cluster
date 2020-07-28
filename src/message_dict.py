@@ -3,16 +3,15 @@ import threading
 import queue
 import synchronized_set
 
-
 from src.beans import NodeInformation
-
 
 DEFAULT_MESSAGE = 'OK'
 DISPATCH_MESSAGE = 'BYE'
 HANDSHAKE_MESSAGE = 'HANDSHAKE'
 VOTE_MESSAGE = 'VOTE'
 JSON_SEPARATOR = ':_:'
-MESSAGE_SEPERATOR = '-----_____-----'
+MESSAGE_SEPARATOR = '--__--'
+
 
 class MessageDict:
 
@@ -24,7 +23,10 @@ class MessageDict:
         if node_information in self.dict.keys():
             if self.dict[node_information].empty():
                 return DEFAULT_MESSAGE + JSON_SEPARATOR
-            return self.dict[node_information].get()
+            copy = list(self.dict[node_information].queue)
+            with self.dict[node_information].mutex:
+                self.dict[node_information].queue.clear()
+            return MESSAGE_SEPARATOR.join(copy)
         return DEFAULT_MESSAGE + JSON_SEPARATOR
 
     def add_message_for_node(self, message: str, target: NodeInformation):
