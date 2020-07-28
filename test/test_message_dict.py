@@ -4,7 +4,7 @@ import time
 from synchronized_set import SynchronizedSet
 
 from src.beans import NodeInformation, NetAddress
-from src.message_dict import MessageDict, DEFAULT_MESSAGE, DISPATCH_MESSAGE, MESSAGE_SEPARATOR
+from src.message_dict import MessageDict, DEFAULT_MESSAGE, DISPATCH_MESSAGE, MESSAGE_SEPARATOR, JSON_SEPARATOR
 
 alice_information = NodeInformation(NetAddress(port=4040), name='alice')
 bob_information = NodeInformation(NetAddress(port=5050), name='bob')
@@ -42,7 +42,7 @@ class MessageDictTestCase(unittest.TestCase):
         message_dict.add_message_for_node("test", alice_information)
         nextMsg = message_dict.get_next_message(alice_information)
         self.assertEqual('test', nextMsg)
-        self.assertEqual(DEFAULT_MESSAGE + MESSAGE_SEPARATOR, message_dict.get_next_message(alice_information))
+        self.assertEqual(DEFAULT_MESSAGE + JSON_SEPARATOR, message_dict.get_next_message(alice_information))
 
     def test_wait_unit_all_received(self):
         message_dict = MessageDict()
