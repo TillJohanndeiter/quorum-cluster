@@ -35,6 +35,7 @@ class NodeManger(Observer):
 
     def start(self):
         self.running = True
+        time.sleep(TIME_BETWEEN_HANDSHAKE)
         self.ping_man.start()
         time.sleep(TIME_BETWEEN_HANDSHAKE)
         self.handshaker.start()
