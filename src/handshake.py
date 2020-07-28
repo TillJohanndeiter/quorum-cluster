@@ -23,7 +23,7 @@ class Handshaker(Observable):
         self.broadcast_Address = broadcast_address
         self.birthtime = birthtime
         self.broadcast_thread = threading.Thread(target=self.__send_broadcast)
-        self.collect_thread = threading.Thread(target=self.__collect_exist_nodes)
+        self.collect_thread = threading.Thread(target=self.__collect_entering_node)
         self.running = False
         self.introduce_socket = None
         self.response_socket = None
@@ -36,14 +36,16 @@ class Handshaker(Observable):
 
     def kill(self):
         self.running = False
-        self.broadcast_thread.join()
+        if self.broadcast_thread.is_alive():
+            self.broadcast_thread.join()
         if self.response_socket is not None:
             try:
                 self.response_socket.shutdown(SHUT_RDWR)
             except (error, OSError, ValueError):
                 pass
             self.response_socket.close()
-        self.collect_thread.join()
+        if self.collect_thread.is_alive():
+            self.collect_thread.join()
 
     def __send_broadcast(self):
         self.introduce_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
@@ -55,7 +57,7 @@ class Handshaker(Observable):
                                      (self.broadcast_Address.host, self.broadcast_Address.port))
         self.introduce_socket.close()
 
-    def __collect_exist_nodes(self):
+    def __collect_entering_node(self):
         self.response_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
         self.response_socket.setsockopt(SOL_SOCKET, SO_REUSEPORT, 1)
         self.response_socket.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)

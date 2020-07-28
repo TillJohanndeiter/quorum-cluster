@@ -2,32 +2,37 @@ from src.beans import NodeInformation
 import queue
 import synchronized_set
 import time
+import threading
 
 DEFAULT_MESSAGE = 'OK'
 DISPATCH_MESSAGE = 'BYE'
 HANDSHAKE_MESSAGE = 'HANDSHAKE'
-
+VOTE_MESSAGE = 'VOTE'
 SEPARATOR = ':_:'
+
 
 
 class MessageDict:
 
     def __init__(self):
         self.dict = dict()
+        self.lock = threading.Lock()
 
-    def get_next_message(self, nodeInformation: NodeInformation) -> str:
-        if nodeInformation in self.dict.keys():
-            if self.dict[nodeInformation].empty():
+    def get_next_message(self, node_information: NodeInformation) -> str:
+        if node_information in self.dict.keys():
+            if self.dict[node_information].empty():
                 return DEFAULT_MESSAGE + SEPARATOR
             else:
-                return self.dict[nodeInformation].get()
+                return self.dict[node_information].get()
         else:
             return DEFAULT_MESSAGE + SEPARATOR
 
     def add_message_for_node(self, message: str, target: NodeInformation):
+        self.lock.acquire()
         if target not in self.dict.keys():
             self.dict[target] = queue.Queue()
         self.dict[target].put(message)
+        self.lock.release()
 
     def add_message_for_all_nodes(self, message: str):
         for node in self.dict.keys():
@@ -39,14 +44,15 @@ class MessageDict:
     def add_handshake_message(self, own: NodeInformation, target: NodeInformation):
         self.add_message_for_node(HANDSHAKE_MESSAGE + SEPARATOR + own.to_json(), target)
 
-    def add_dispatch_message(self, own_information : NodeInformation, node_information: [synchronized_set.SynchronizedSet]):
+    def add_dispatch_message(self, own_information: NodeInformation,
+                             node_information: synchronized_set.SynchronizedSet):
         for target in node_information:
             self.add_message_for_node(DISPATCH_MESSAGE + SEPARATOR + own_information.to_json(), target)
 
     def wait_unit_everybody_received(self, message):
         while not self.check_if_all_get_message(message):
             time.sleep(1)
-        time.sleep(5)
+        time.sleep(3)
         print('All recieved: {} from'.format(message))
 
     def check_if_all_get_message(self, message):
@@ -56,6 +62,12 @@ class MessageDict:
                 all_get_message = False
 
         return all_get_message
+
+    def add_vote(self, voted_node: NodeInformation, own_info: NodeInformation,
+                 node_information: synchronized_set.SynchronizedSet):
+        for target in node_information:
+            self.add_message_for_node(VOTE_MESSAGE + SEPARATOR
+                                      + own_info.to_json() + SEPARATOR + voted_node.to_json(), target)
 
     def clear(self):
         self.dict.clear()

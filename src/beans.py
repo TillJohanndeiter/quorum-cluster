@@ -4,7 +4,7 @@ from json.decoder import JSONDecodeError
 
 
 class NetAddress:
-    def __init__(self, host='0.0.0.0', port=3030):
+    def __init__(self, host='localhost', port=3030):
         self.host = host
         self.port = port
 
@@ -58,7 +58,7 @@ def node_information_from_json(json_string) -> NodeInformation:
         return node_info_obj
     except Exception as e:
         print(e)
-        print("Faulty Json: {}".format(json_string))
+        print('Faulty json: \n{} \n'.format(json_string))
 
 
 def net_address_information_from_json(json_string) -> NetAddress:

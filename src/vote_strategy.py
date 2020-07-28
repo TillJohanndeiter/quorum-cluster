@@ -9,11 +9,11 @@ class VoteStrategy:
 
 class PortStrategy(VoteStrategy):
 
-    def get_best_node(self, nodes: [NodeInformation]):
+    def get_best_node(self, nodes: [NodeInformation]) -> NodeInformation:
         return sorted(nodes, key=lambda node: node.net_address.port)[0]
 
 
 class TimeStrategy(VoteStrategy):
 
-    def get_best_node(self, nodes: [NodeInformation]):
+    def get_best_node(self, nodes: [NodeInformation]) -> NodeInformation:
         return sorted(nodes, key=lambda node: node.birthtime)[0]
