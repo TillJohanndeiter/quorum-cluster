@@ -9,7 +9,7 @@ from src.beans import NetAddress, NodeInformation, node_information_from_json
 from src.observers import UpdateValue
 
 DEFAULT_BROADCAST = NetAddress(host="<broadcast>", port=5555)
-MESSAGE_LENGTH = 1024
+MESSAGE_LENGTH = 500
 TIMEOUT_BROADCAST = 0.2
 ENCODE_UTF_8 = 'utf8'
 NEW_ENTERING_NODE = 'HANDSHAKE_WITH_ENTERING_NODE'

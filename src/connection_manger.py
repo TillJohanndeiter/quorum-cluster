@@ -5,7 +5,7 @@ from synchronized_set import SynchronizedSet
 from observer import Observer
 
 from src.message_dict import MessageDict, DEFAULT_MESSAGE, DISPATCH_MESSAGE, \
-    SEPARATOR, HANDSHAKE_MESSAGE, VOTE_MESSAGE
+    JSON_SEPARATOR, HANDSHAKE_MESSAGE, VOTE_MESSAGE
 from src.pinger import INCOMING_MESSAGE, CONNECTION_LOST, PingMan
 from src.handshake import NEW_ENTERING_NODE, Handshaker
 from src.beans import NodeInformation, node_information_from_json
@@ -54,7 +54,7 @@ class NodeManger(Observer):
         self.running = False
 
     def own_dispatch_message(self):
-        return DISPATCH_MESSAGE + SEPARATOR + self.own_information.to_json()
+        return DISPATCH_MESSAGE + JSON_SEPARATOR + self.own_information.to_json()
 
     def update(self, new_value):
         new_value = new_value[0]
@@ -93,12 +93,12 @@ class NodeManger(Observer):
 
         msg = str(new_value.value)
 
-        subject = msg.split(SEPARATOR)[0]
+        subject = msg.split(JSON_SEPARATOR)[0]
 
         if subject == DEFAULT_MESSAGE:
             return
 
-        json = msg.split(SEPARATOR)[1]
+        json = msg.split(JSON_SEPARATOR)[1]
         node_info = node_information_from_json(json)
 
         if subject == DISPATCH_MESSAGE:
@@ -122,7 +122,7 @@ class NodeManger(Observer):
             self.calc_new_master_and_add_message()
         elif subject == VOTE_MESSAGE:
             voted_from = node_info
-            json = msg.split(SEPARATOR)[2]
+            json = msg.split(JSON_SEPARATOR)[2]
             voted_node = node_information_from_json(json)
             print(
                 '{} get vote from {} voted for {}'.format(self.own_information.name, voted_from.name, voted_node.name))

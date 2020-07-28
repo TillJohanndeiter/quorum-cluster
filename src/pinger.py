@@ -14,7 +14,6 @@ INCOMING_MESSAGE = 'INCOMING_MESSAGE'
 CONNECTION_LOST = 'CONNECTION_LOST'
 
 TIME_TO_SEND_DISPATCH_MESSAGE = 10
-LENGTH_OF_RECEIVED_MESSAGE = 1024
 MAX_PING_TRY = 10
 SECOND_INTERVAL_PING_TRY = 0.1
 UTF_8 = 'utf8'
@@ -143,5 +142,3 @@ class PingMan(Observable):
 
             for target_ping_thread in ping_threads:
                 target_ping_thread.join()
-
-            time.sleep(2)

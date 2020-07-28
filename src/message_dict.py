@@ -11,8 +11,8 @@ DEFAULT_MESSAGE = 'OK'
 DISPATCH_MESSAGE = 'BYE'
 HANDSHAKE_MESSAGE = 'HANDSHAKE'
 VOTE_MESSAGE = 'VOTE'
-SEPARATOR = ':_:'
-
+JSON_SEPARATOR = ':_:'
+MESSAGE_SEPERATOR = '-----_____-----'
 
 class MessageDict:
 
@@ -23,9 +23,9 @@ class MessageDict:
     def get_next_message(self, node_information: NodeInformation) -> str:
         if node_information in self.dict.keys():
             if self.dict[node_information].empty():
-                return DEFAULT_MESSAGE + SEPARATOR
+                return DEFAULT_MESSAGE + JSON_SEPARATOR
             return self.dict[node_information].get()
-        return DEFAULT_MESSAGE + SEPARATOR
+        return DEFAULT_MESSAGE + JSON_SEPARATOR
 
     def add_message_for_node(self, message: str, target: NodeInformation):
         self.lock.acquire()
@@ -42,13 +42,13 @@ class MessageDict:
         self.dict[node] = queue.Queue()
 
     def add_handshake_message(self, own: NodeInformation, target: NodeInformation):
-        self.add_message_for_node(HANDSHAKE_MESSAGE + SEPARATOR + own.to_json(), target)
+        self.add_message_for_node(HANDSHAKE_MESSAGE + JSON_SEPARATOR + own.to_json(), target)
 
     def add_dispatch_message(self, own_information: NodeInformation,
                              node_information: synchronized_set.SynchronizedSet):
         for target in node_information:
             self.add_message_for_node(
-                DISPATCH_MESSAGE + SEPARATOR + own_information.to_json(),
+                DISPATCH_MESSAGE + JSON_SEPARATOR + own_information.to_json(),
                 target)
 
     def wait_unit_everybody_received(self, message):
@@ -67,8 +67,8 @@ class MessageDict:
     def add_vote(self, voted_node: NodeInformation, own_info: NodeInformation,
                  node_information: synchronized_set.SynchronizedSet):
         for target in node_information:
-            self.add_message_for_node(VOTE_MESSAGE + SEPARATOR
-                                      + own_info.to_json() + SEPARATOR + voted_node.to_json(),
+            self.add_message_for_node(VOTE_MESSAGE + JSON_SEPARATOR
+                                      + own_info.to_json() + JSON_SEPARATOR + voted_node.to_json(),
                                       target)
 
     def clear(self):

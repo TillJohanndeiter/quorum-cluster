@@ -101,6 +101,7 @@ class AdvancedNetworkCase(unittest.TestCase):
             self.assertEqual(peter.connected, SynchronizedSet({alice_information, bob_information}))
 
             peter.kill()
+            time.sleep(8)
             self.assertEqual(alice.connected, SynchronizedSet({bob_information}))
             self.assertEqual(bob.connected, SynchronizedSet({alice_information}))
             self.assertEqual(alice.lost, SynchronizedSet({peter_information}))
