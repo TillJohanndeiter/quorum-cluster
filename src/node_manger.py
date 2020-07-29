@@ -9,7 +9,7 @@ from src.message_dict import MessageDict, DEFAULT_MESSAGE, DISPATCH_MESSAGE, \
 from src.pinger import INCOMING_MESSAGE, CONNECTION_LOST, PingMan
 from src.handshake import NEW_ENTERING_NODE, Handshaker
 from src.beans import NodeInformation, node_information_from_json
-from src.vote_strategy import TimeStrategy
+from src.vote_strategy import TimeStrategy, NEW_MASTER, NO_MAJORITY_SHUTDOWN
 
 TIME_BETWEEN_HANDSHAKE = 2
 
@@ -28,9 +28,9 @@ class NodeManger(Observer):
         self.connected = connected
         self.dispatched = SynchronizedSet(set())
         self.lost = SynchronizedSet(set())
-        self.vote_strategy = TimeStrategy()
+        self.vote_strategy = TimeStrategy(self.own_information, self.message_dict)
+        self.vote_strategy.attach(self)
         self.master = None
-        self.voting_dict = dict()
         self.running = False
 
     def start(self):
@@ -39,7 +39,7 @@ class NodeManger(Observer):
         self.ping_man.start()
         time.sleep(TIME_BETWEEN_HANDSHAKE)
         self.handshaker.start()
-        self.calc_new_master_and_add_message()
+        self.vote_strategy.calc_new_master_and_add_message(self.connected, self.dispatched, self.lost)
 
     def kill(self):
         self.ping_man.kill()
@@ -57,54 +57,42 @@ class NodeManger(Observer):
     def own_dispatch_message(self):
         return DISPATCH_MESSAGE + JSON_SEPARATOR + self.own_information.to_json()
 
-    def update(self, new_value):
-        new_value = new_value[0]
-        event = new_value.name
+    def update(self, update_value):
+        update_value = update_value[0]
+        event = update_value.name
         if event == NEW_ENTERING_NODE:
-            self.__handle_entering_node(new_value)
+            self.__handle_entering_node(update_value)
         elif event == INCOMING_MESSAGE:
-            self.__handle_messages(new_value)
+            self.__handle_messages(update_value)
         elif event == CONNECTION_LOST:
-            lost_node = new_value.value
-            print('{} lost connection from {}'.format(self.own_information.name, lost_node.name))
+            self.__handle_connection_lost(update_value)
+        elif event == NEW_MASTER:
+            self.master = update_value.value
+        elif event == NO_MAJORITY_SHUTDOWN:
+            self.dispatch()
 
-            if lost_node in self.connected and lost_node not in self.dispatched:
-                self.connected.remove(lost_node)
-                self.lost.add(lost_node)
-
-            if lost_node == self.master:
-                self.calc_new_master_and_add_message()
-
-            if len(self.lost) > len(self.connected):
-                print('{} dispatching because more lost than connected'.format(self.own_information.name))
-                self.dispatch()
-
-    def calc_new_master_and_add_message(self):
-        copy = self.connected.copy()
-        copy.add(self.own_information)
-        voted_for = self.vote_strategy.get_best_node(copy)
-        print('{} want {} as new master'.format(self.own_information.name, voted_for.name))
-        self.message_dict.add_vote(voted_node=voted_for,
-                                   own_info=self.own_information,
-                                   node_information=self.connected)
-        self.voting_dict[self.own_information] = voted_for
-        self.eval_votes_and_make_new_master(copy)
+    def __handle_connection_lost(self, new_value):
+        lost_node = new_value.value
+        if lost_node in self.connected and lost_node not in self.dispatched:
+            self.connected.remove(lost_node)
+            self.lost.add(lost_node)
+        self.vote_strategy.calc_new_master_and_add_message(self.connected, self.dispatched, self.lost)
+        if len(self.lost) > len(self.connected):
+            print('{} dispatching because more lost than connected'.format(self.own_information.name))
+            self.dispatch()
 
     def __handle_messages(self, new_value):
         messages = str(new_value.value).split(MESSAGE_SEPARATOR)
         messages.sort(key=lambda x: x.startswith(HANDSHAKE_MESSAGE))
         for message in messages:
-            self.handle_non_default_message(message)
+            self.__handle_non_default_message(message)
 
-    def handle_non_default_message(self, msg):
+    def __handle_non_default_message(self, msg):
         subject = msg.split(JSON_SEPARATOR)[0]
         if subject == DEFAULT_MESSAGE:
             return
-        json = None
-        try:
-            json = msg.split(JSON_SEPARATOR)[1]
-        except:
-            print('Faulty Message : {}'.format(msg))
+
+        json = msg.split(JSON_SEPARATOR)[1]
         node_info = node_information_from_json(json)
         if subject == DISPATCH_MESSAGE:
             print('{} Dispatched from {}'.format(self.own_information.name, node_info.name))
@@ -113,7 +101,7 @@ class NodeManger(Observer):
             if node_info in self.lost:
                 self.lost.remove(node_info)
             self.dispatched.add(node_info)
-            self.calc_new_master_and_add_message()
+            self.vote_strategy.calc_new_master_and_add_message(self.connected, self.dispatched, self.lost)
         elif subject == HANDSHAKE_MESSAGE:
             if node_info != self.own_information:
                 self.message_dict.add_node(node_info)
@@ -124,41 +112,16 @@ class NodeManger(Observer):
                 self.dispatched.remove(node_info)
             if node_info in self.lost:
                 self.lost.remove(node_info)
-            self.calc_new_master_and_add_message()
+            self.vote_strategy.calc_new_master_and_add_message(self.connected, self.dispatched, self.lost)
         elif subject == VOTE_MESSAGE:
             voted_from = node_info
             json = msg.split(JSON_SEPARATOR)[2]
             voted_node = node_information_from_json(json)
-            print(
-                '{} get vote from {} voted for {}'.format(self.own_information.name, voted_from.name, voted_node.name))
-            self.voting_dict[voted_from] = voted_node
-            copy_connected = self.connected.copy()
-            copy_connected.add(self.own_information)
-            self.eval_votes_and_make_new_master(copy_connected)
-
-    def eval_votes_and_make_new_master(self, copy_connected):
-
-        for node in self.lost:
-            if node in self.voting_dict:
-                self.voting_dict.pop(node)
-        for node in self.dispatched:
-            if node in self.voting_dict:
-                self.voting_dict.pop(node)
-
-        if SynchronizedSet(self.voting_dict.keys()).issuperset(copy_connected):
-            occurrence_count = Counter(list(self.voting_dict.values()))
-            self.master = occurrence_count.most_common(1)[0][0]
-            print('{} has master {}'.format(self.own_information.name, self.master.name))
-            if occurrence_count.most_common(1)[0][1] < len(self.connected) / 2:
-                print('{} dispatching their is not majority'.format(self.own_information.name))
-                self.dispatch()
-            self.voting_dict.clear()
+            self.vote_strategy.vote_for(voted_from, voted_node, self.connected, self.dispatched, self.lost)
 
     def __handle_entering_node(self, new_value):
         node_info = new_value.value
         if node_info != self.own_information:
             self.message_dict.add_handshake_message(own=self.own_information, target=node_info)
             self.connected.add(node_info)
-            print('{} add {} to connected len of connected {}'.format(self.own_information.name, node_info.name,
-                                                                      len(self.connected)))
-            self.calc_new_master_and_add_message()
+            self.vote_strategy.calc_new_master_and_add_message(self.connected, self.dispatched, self.lost)

@@ -12,13 +12,13 @@ all_information = [bob_information, alice_information, peter_information]
 class VoteStrategyCase(unittest.TestCase):
 
     def test_port_strategy(self):
-        port_strategy = PortStrategy()
-        result = port_strategy.get_best_node(all_information)
+        port_strategy = PortStrategy(None, None)
+        result = port_strategy._get_best_node(all_information)
         self.assertEqual(result, alice_information)
 
     def test_time_strategy(self):
-        port_strategy = TimeStrategy()
-        result = port_strategy.get_best_node(all_information)
+        port_strategy = TimeStrategy(None, None)
+        result = port_strategy._get_best_node(all_information)
         self.assertEqual(result, peter_information)
 
 

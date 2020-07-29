@@ -1,58 +1,3 @@
-Master und QuorumsInstance existieren
-Netzwerk Knoten stehen per heart-beat mit master in Kommunikation
-
-Anmeldung:
-    Neuer Knoten versucht sich bei master zu registrieren
-    Master meldet neuen Knoten der QuorumsInstance und diese überprüft ggf. ob neu oder Wiedereintritt
-    Konten bekommt multicast Adresse bei Handshake übergeben
-    Knoten verbindet sich ggf. mit weiteren Knoten
-
-if Knoten kann master nicht mehr erreichen:
-
-    kontaktiere Quorum und melde Ausfall
-
-    if Quorum nicht mehr erreichbar:
-        shutdown Knoten
-
-    if mehr als 1/2 aller Knoten bereits ausgefallen:
-        Quorum sendet shutdown an Knoten per multicast
-        shutdown Quorum
-
-
-    if alle Knoten melden Ausfall
-    && QuorumsInstance kann master nicht mehr erreichen:
-
-        QuorumsInstance sendet message an alle Knoten
-        Konten senden (per Json Response) ping werte aller verbundenen Knoten
-        QuorumsInstance ermittelt Knoten der bisher am wenigsten Ausfälle hatte (Ausfälle / Zeit im Netzwerk) und besten ping mit verbunden Knoten hat
-        QuorumsInstance meldet über multicast an alle Konten den neuen master
-       
-        Um Fehler zu vermeiden, gleicht jeder Knoten seine master variable mit QuorumsInstance ab
-       
-        if nicht übereinstimmend bei < 1/2 der Knoten:
-            master variable wird korregiert
-        else if >= 1/2 nicht übereinstimmend:
-            Quorum wird erneut durchgeführt
-
-        QuorumsInstance meldet reguläre Aktivitäten wieder aufzunehmen
-
-
-    else:
-        sende an ausgefallen Konten Adresse des masters
-        Knoten versucht sich erneut mit master zu verbinden
-
-
-
-
-
-
-
-
-
-Pseudocode without QuorumsInstance:
-
-
-Vorhandene Knoten werden übergeben
 
 Anmeldung:
     Node erhält Adresse und Port des Masters oder findet per portscan
@@ -78,48 +23,9 @@ Falls Verbindung abbricht:
         status quo bleibt so oder shutdown
 
     if keine mindest Mehrheit (1/2 oder 1/3) erkennen lässt:
-        shutdown
-
-    if neuer master ist nicht er selbst:
-        Node führt Handshake mit neuen Master durch (Wichtig: Mehrfach, da asynchron)
-    else:
-        Wechsele in Master Mode
+        Knoten die Mehrheit bilden bleiben bestehen
 
 
 Abmeldung:
-    Node meldet sich ab über mutlticast
+    Node meldet sich ab über message
     Alle Nodes werden über abmeldung informiert
-
-
-
-    bob send message : OK to peter
-peter send message : OK to alice
-peter send message : OK to alice
-peter send message : OK to alice
-
-alice send message : OK to peter
-bob send message : OK to peter
-alice send message : OK to peter
-bob send message : OK to peter
-alice send message : OK to peter
-bob send message : OK to peter
-peter send message : OK to alice
-alice send message : OK to peter
-bob send message : OK to peter
-peter send message : OK to alice
-alice send message : OK to peter
-bob send message : OK to peter
-peter send message : OK to alice
-alice send message : OK to peter
-bob send message : OK to peter
-peter send message : OK to alice
-alice send message : OK to peter
-bob send message : OK to peter
-peter send message : OK to alice
-alice send message : OK to peter
-bob send message : OK to peter
-peter send message : OK to alice
-alice send message : OK to peter
-bob send message : OK to peter
-peter send message : OK to alice
-alice send message : OK to peter
