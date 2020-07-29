@@ -146,7 +146,7 @@ class AdvancedNetworkCase(unittest.TestCase):
             bob.kill()
             peter.kill()
 
-    def test_chaning_master(self):
+    def test_changing_master(self):
         global alice, bob, peter, dieter
         try:
             alice_information = NodeInformation(NetAddress(port=3010), birthtime=50, name='alice')

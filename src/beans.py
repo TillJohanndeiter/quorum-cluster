@@ -1,8 +1,9 @@
 import json
 import time
 
+
 class NetAddress:
-    def __init__(self, host='localhost', port=3030):
+    def __init__(self, host='0.0.0.0', port=3030):
         self.host = host
         self.port = port
 
