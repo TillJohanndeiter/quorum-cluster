@@ -93,3 +93,11 @@ def net_address_information_from_json(json_string) -> NetAddress:
     net_address_dict = json.loads(json_string)
     net_address = NetAddress(**net_address_dict)
     return net_address
+
+class UpdateValue:
+    """
+    Bean of transfer update values with NAME for identification what happened.
+    """
+    def __init__(self, name, value=None):
+        self.name = name
+        self.value = value
