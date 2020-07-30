@@ -1,3 +1,6 @@
+"""
+Simple script to read arguments and create instance of node.
+"""
 import argparse
 import os
 from socket import socket, AF_INET, SOCK_STREAM
@@ -7,84 +10,115 @@ from src.status_handler import StatusHandler
 from src.beans import NodeInformation, NetAddress
 from src.cmd_controller import CmdController
 
-PORT_INFO = 'port in range of [1024...49151]'
-ADDRESS_INFO = 'address e.g localhost or subnet address'
+PORT_INFO = 'PORT in range of [1024...49151]'
+ADDRESS_INFO = 'ADDRESS e.g localhost or subnet ADDRESS'
 
-parser = argparse.ArgumentParser(description='Script to set up a node and ')
-parser.add_argument('address', help=ADDRESS_INFO, type=str, default='0.0.0.0', nargs='?')
-parser.add_argument('port', help=PORT_INFO, type=int, default=8080, nargs='?')
-parser.add_argument('broadcastAddress', help=ADDRESS_INFO, default='255.255.255.255', type=str, nargs='?')
-parser.add_argument('broadcastPort', help=PORT_INFO, default=5595, type=int, nargs='?')
-parser.add_argument('-n', '--name', help='optional name especially if you want to understand the debug log',
-                    default=None, type=str, nargs='?')
-parser.add_argument('--use_port_instead_of_life_time', help='Use port instead of lifetime to determine quorum',
+PARSER = argparse.ArgumentParser(description='Script to set up a node and ')
+PARSER.add_argument('ADDRESS',
+                    help=ADDRESS_INFO, type=str,
+                    default='0.0.0.0',
+                    nargs='?')
+PARSER.add_argument('PORT',
+                    help=PORT_INFO,
+                    type=int,
+                    default=8080,
+                    nargs='?')
+PARSER.add_argument('broadcastAddress',
+                    help=ADDRESS_INFO,
+                    default='255.255.255.255',
+                    type=str,
+                    nargs='?')
+PARSER.add_argument('broadcastPort',
+                    help=PORT_INFO,
+                    default=5595,
+                    type=int,
+                    nargs='?')
+PARSER.add_argument('-n',
+                    '--NAME',
+                    help='optional NAME especially if you want to '
+                         'understand the DEBUG log',
+                    default=None,
+                    type=str,
+                    nargs='?')
+PARSER.add_argument('--use_port_instead_of_life_time',
+                    help='Use PORT instead of lifetime to determine quorum',
                     action='store_true')
-parser.add_argument('-m', '--masterScript',
-                    help='Python script that will be executed when node become master or keep master status',
-                    type=str, default=None)
-parser.add_argument('-s', '--slaveScript',
-                    help='Python script that will be executed when node become normal or keep normal status',
-                    type=str, default=None)
-parser.add_argument('-d', '--debug', help='Print debug messages while running', action='store_true')
+PARSER.add_argument('-m', '--masterScript',
+                    help='Python script that will be executed when node '
+                         'become master or keep master status',
+                    type=str,
+                    default=None)
+PARSER.add_argument('-s', '--slaveScript',
+                    help='Python script that will be executed when '
+                         'node become normal or keep normal status',
+                    type=str,
+                    default=None)
+PARSER.add_argument('-d', '--DEBUG', help='Print DEBUG messages while running',
+                    action='store_true')
+
 
 def port_in_use(host, port):
+    """
+    Check if port of host is closed
+    :param host: target address
+    :param port: port to check
+    :return: True if open False if closed/used
+    """
     sock = socket(AF_INET, SOCK_STREAM)
     result = sock.connect_ex((host, port))
     sock.close()
     return result == 0
 
 
-
-
 if __name__ == '__main__':
-    args = parser.parse_args()
-    address = args.address
-    port = args.port
-    name = args.name
-    if name is None:
-        name = 'Node with address {} with port {}'.format(address, port)
+    ARGS = PARSER.parse_args()
+    ADDRESS = ARGS.address
+    PORT = ARGS.port
+    NAME = ARGS.name
+    if NAME is None:
+        NAME = 'Node with ADDRESS {} with PORT {}'.format(ADDRESS, PORT)
 
-    if port_in_use(address, port):
+    if port_in_use(ADDRESS, PORT):
         for i in range(1024, 49151):
-            if not port_in_use(host=address, port=i):
-                print('Port is already in use. Use free port {} instead of {}'.format(i, port))
-                port = i
+            if not port_in_use(host=ADDRESS, port=i):
+                print('Port is already in use. Use free PORT {} instead of {}'.format(i, PORT))
+                PORT = i
                 break
 
-    node_information = NodeInformation(NetAddress(address, port), name=name)
+    OWN_INFO = NodeInformation(NetAddress(ADDRESS, PORT), name=NAME)
 
-    broadcast_address = NetAddress(args.broadcastAddress, args.broadcastPort)
+    BROAD_INFO = NetAddress(ARGS.broadcastAddress, ARGS.broadcastPort)
 
-    if args.use_port_instead_of_life_time is False:
-        node_manger = create_node_manger_by_node_info(node_info=node_information,
-                                                      broadcast_address=broadcast_address,
+    if ARGS.use_port_instead_of_life_time is False:
+        NODE_MANGER = create_node_manger_by_node_info(node_info=OWN_INFO,
+                                                      broadcast_address=BROAD_INFO,
                                                       vote_by_port=False)
     else:
-        node_manger = create_node_manger_by_node_info(node_info=node_information,
-                                                      broadcast_address=broadcast_address,
+        NODE_MANGER = create_node_manger_by_node_info(node_info=OWN_INFO,
+                                                      broadcast_address=BROAD_INFO,
                                                       vote_by_port=True)
 
-    slave_script = args.slaveScript
+    SLAVE_SCRIPT = ARGS.slaveScript
 
-    if slave_script is not None:
-        slave_script = os.path.abspath(slave_script)
-        assert os.path.isfile(slave_script)
+    if SLAVE_SCRIPT is not None:
+        SLAVE_SCRIPT = os.path.abspath(SLAVE_SCRIPT)
+        assert os.path.isfile(SLAVE_SCRIPT)
 
-    master_script = args.masterScript
-    if master_script is not None:
-        master_script = os.path.abspath(master_script)
-        assert os.path.isfile(master_script)
+    MASTER_SCRIPT = ARGS.masterScript
+    if MASTER_SCRIPT is not None:
+        MASTER_SCRIPT = os.path.abspath(MASTER_SCRIPT)
+        assert os.path.isfile(MASTER_SCRIPT)
 
-    if master_script is not None or slave_script is not None:
-        status_handler = StatusHandler(node_information, slave_script, master_script)
-        node_manger.vote_strategy.attach(status_handler)
+    if MASTER_SCRIPT is not None or SLAVE_SCRIPT is not None:
+        STATUS_HANDLER = StatusHandler(OWN_INFO, SLAVE_SCRIPT, MASTER_SCRIPT)
+        NODE_MANGER.vote_strategy.attach(STATUS_HANDLER)
 
-    debug = args.debug
+    DEBUG = ARGS.debug
 
-    if debug:
-        cmd_controller = CmdController(node_manger)
-        node_manger.vote_strategy.attach(cmd_controller)
-        node_manger.ping_man.attach(cmd_controller)
-        node_manger.handshaker.attach(cmd_controller)
+    if DEBUG:
+        CMD_CONTROLLER = CmdController(NODE_MANGER)
+        NODE_MANGER.vote_strategy.attach(CMD_CONTROLLER)
+        NODE_MANGER.ping_man.attach(CMD_CONTROLLER)
+        NODE_MANGER.handshaker.attach(CMD_CONTROLLER)
 
-    node_manger.start()
+    NODE_MANGER.start()

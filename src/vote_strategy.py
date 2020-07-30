@@ -1,10 +1,13 @@
+"""
+Provides abstract template Strategy and two implementations for
+handling incoming votes and calculate new master.
+"""
 from collections import Counter
 from synchronized_set import SynchronizedSet
 from observer import Observable
 
-from src.beans import NodeInformation
+from src.beans import NodeInformation, UpdateValue
 from src.message_dict import MessageDict
-from src.observers import UpdateValue
 
 NEW_MASTER = 'NEW_MASTER'
 VOTE_FOR = 'VOTE_FOR'
@@ -12,6 +15,10 @@ NO_MAJORITY_SHUTDOWN = 'NO_MAJORITY_SHUTDOWN'
 
 
 class VoteStrategy(Observable):
+    """
+    Abstract class which provides the template for calculate new master
+    and notify observer (NodeManger)
+    """
 
     def __init__(self, own_information: NodeInformation, message_dict: MessageDict):
         super().__init__()
@@ -21,6 +28,12 @@ class VoteStrategy(Observable):
 
     def calc_new_master_and_add_message(self, connected: SynchronizedSet, lost: SynchronizedSet,
                                         dispatched: SynchronizedSet):
+        """
+        :param connected: set of currently connected nodes
+        :param lost: set of currently lost node
+        :param dispatched: set of currently dispatched nodes
+        :return: None
+        """
         copy_connected = connected.copy()
         copy_connected.add(self.own_information)
         voted_for = self._get_best_node(copy_connected)
@@ -33,6 +46,15 @@ class VoteStrategy(Observable):
 
     def vote_for(self, voted_from, voted_node, connected: SynchronizedSet, lost: SynchronizedSet,
                  dispatched: SynchronizedSet):
+        """
+        Handle incoming vote by adding vote to voting dict and calculate master.
+        :param voted_from: Node who send vote
+        :param voted_node: Node which was voted
+        :param connected: Set of Nodes which are connected
+        :param lost: Set of Nodes which are lost
+        :param dispatched: Set of Nodes which are dispatched
+        :return: None
+        """
         self.voting_dict[voted_from] = voted_node
         copy_connected = connected.copy()
         copy_connected.add(self.own_information)
@@ -41,7 +63,8 @@ class VoteStrategy(Observable):
     def _get_best_node(self, nodes: [NodeInformation]) -> NodeInformation:
         raise NotImplementedError("Warning: Used abstract class VoteStrategy")
 
-    def __eval_votes_and_make_new_master(self, copy_connected: SynchronizedSet, dispatched: SynchronizedSet,
+    def __eval_votes_and_make_new_master(self, copy_connected: SynchronizedSet,
+                                         dispatched: SynchronizedSet,
                                          lost: SynchronizedSet):
 
         for node in lost:
@@ -61,12 +84,26 @@ class VoteStrategy(Observable):
 
 
 class PortStrategy(VoteStrategy):
-
+    """
+    Implementation of abstract class.
+    """
     def _get_best_node(self, nodes: [NodeInformation]) -> NodeInformation:
+        """
+        Select new master by lowest number of PORT
+        :param nodes: all nodes in network
+        :return: None
+        """
         return sorted(nodes, key=lambda node: node.net_address.port)[0]
 
 
 class TimeStrategy(VoteStrategy):
-
+    """
+    Implementation of abstract class.
+    """
     def _get_best_node(self, nodes: [NodeInformation]) -> NodeInformation:
+        """
+        Select new master by earliest time of initialisation
+        :param nodes: all nodes in network
+        :return: None
+        """
         return sorted(nodes, key=lambda node: node.birthtime)[0]

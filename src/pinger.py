@@ -1,3 +1,6 @@
+"""
+Provides class responsible for send messages and check if target is still in network.
+"""
 import struct
 import time
 from threading import Thread
@@ -5,9 +8,7 @@ from socket import AF_INET, SOCK_STREAM, IPPROTO_TCP, SOMAXCONN, SHUT_RDWR, sock
 from synchronized_set import SynchronizedSet
 from observer import Observable
 from src.message_dict import MessageDict
-from src.observers import UpdateValue
-from src.beans import NodeInformation
-
+from src.beans import NodeInformation, UpdateValue
 
 NEW_EXISTING_NODE = 'HANDSHAKE_WITH_EXISTING_BEFORE'
 INCOMING_MESSAGE = 'INCOMING_MESSAGE'
@@ -19,7 +20,20 @@ SECOND_INTERVAL_PING_TRY = 0.1
 UTF_8 = 'utf8'
 
 
+def _read_number_of_bytes(sock, num_bytes_to_read):
+    data = bytearray()
+    while len(data) < num_bytes_to_read:
+        packet = sock.recv(num_bytes_to_read - len(data))
+        if not packet:
+            return None
+        data.extend(packet)
+    return data
+
+
 class PingMan(Observable):
+    """
+    Responsible for send messages and check if target is still in network.
+    """
 
     def __init__(self, own_information: NodeInformation, message_dict: MessageDict,
                  connected: SynchronizedSet):
@@ -33,11 +47,19 @@ class PingMan(Observable):
         self.server_socket = None
 
     def start(self):
+        """
+        Start socket thread in which messages form other nodes are received
+        :return: None
+        """
         self.running = True
         self.server_socket_thread.start()
         self.ping_thread.start()
 
     def kill(self):
+        """
+        Close all sockets and will end both threads for incoming and send messages
+        :return: None
+        """
         self.running = False
         if self.server_socket is not None:
             try:
@@ -50,57 +72,67 @@ class PingMan(Observable):
             self.server_socket_thread.join()
 
     def __set_up_server_socket(self):
-
+        """
+        Bind server socket and wait for incoming connection from other node.
+        :return: None
+        """
         try:
             self.server_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
             self.server_socket.bind(self.own_information.net_address.to_tuple())
             self.server_socket.listen(SOMAXCONN)
-            # print('{} start server socket at {}'.format(self.own_information.name,
-            #                                         self.own_information.net_address.to_json()))
 
             while self.running:
-                try:
-                    in_socket, _ = self.server_socket.accept()
-                    raw_msglen = self.read_number_of_bytes(in_socket, 4)
-                    if raw_msglen:
-                        msg_len = struct.unpack('>I', raw_msglen)[0]
-                        msg = self.read_number_of_bytes(in_socket, msg_len)
-                        if msg is not None:
-                            msg = msg.decode(UTF_8)
-                            #print('{} received msg: \n {} \n'.format(self.own_information.name, msg))
-                            if msg != '':
-                                self.notify(UpdateValue(INCOMING_MESSAGE, msg))
-                    if in_socket is not None:
-                        in_socket.close()
-                except timeout:
-                    pass
-                except OSError:
-                    pass
+                self.__recive_message()
         finally:
             self.server_socket.close()
 
-    def read_number_of_bytes(self, sock, num_bytes_to_read):
-        data = bytearray()
-        while len(data) < num_bytes_to_read:
-            packet = sock.recv(num_bytes_to_read - len(data))
-            if not packet:
-                return None
-            data.extend(packet)
-        return data
+    #TODO: Check if thread for update is more stable
+    def __recive_message(self):
+        """
+        Accept incoming connection, read header with length and message.
+        Then will notify Observer about new message
+        :return: None
+        """
+        try:
+            in_socket, _ = self.server_socket.accept()
+            raw_msglen = _read_number_of_bytes(in_socket, 4)
+            if raw_msglen:
+                msg_len = struct.unpack('>I', raw_msglen)[0]
+                msg = _read_number_of_bytes(in_socket, msg_len)
+                if msg is not None:
+                    msg = msg.decode(UTF_8)
+                    if msg != '':
+                        self.notify(UpdateValue(INCOMING_MESSAGE, msg))
+            if in_socket is not None:
+                in_socket.close()
+        except timeout:
+            pass
+        except OSError:
+            pass
 
-    def update_message(self, in_socket: socket):
-
-        raw_msglen = self.read_number_of_bytes(in_socket, 4)
+    def __update_message(self, in_socket: socket):
+        """
+        Read length of message and then based on length bytes
+        rest of message
+        :param in_socket: socket of connection to other node
+        :return: None
+        """
+        raw_msglen = _read_number_of_bytes(in_socket, 4)
         if raw_msglen:
             msg_len = struct.unpack('>I', raw_msglen)[0]
-            msg = self.read_number_of_bytes(in_socket, msg_len)
+            msg = _read_number_of_bytes(in_socket, msg_len)
             if msg is not None:
                 msg = msg.decode(UTF_8)
-                #print('{} received msg: \n {} \n'.format(self.own_information.name, msg))
                 self.notify(UpdateValue(INCOMING_MESSAGE, msg))
         in_socket.close()
 
     def __send_ping_to_target(self, target: NodeInformation):
+        """
+        Take message from message dict and will make MAX_PING_TRY connection to
+        target node. If message could not be send, Observer will be notified by using
+        :param target: target of send messages/ping
+        :return: None
+        """
         target_address = target.net_address
         ping_counter = 0
         suc_connected = False
@@ -125,14 +157,17 @@ class PingMan(Observable):
                     client_socket.close()
 
         if ping_counter == MAX_PING_TRY and target in self.connected:
-            print('{} could not send \n {}  \n to send to {}'.format(self.own_information.name, message, target.name))
-            t = Thread(target=self.notify, args=(UpdateValue(CONNECTION_LOST, target), ))
-            t.start()
-        #else:
-            # print('{} send \n {}  \n to send to {}'.format(self.own_information.name, message, target.name))
+            print('{} could not send \n {}  \n to send to {}'.format(
+                self.own_information.name, message, target.name))
+            ping_thread = Thread(target=self.notify, args=(UpdateValue(CONNECTION_LOST, target),))
+            ping_thread.start()
 
     def __send_ping_to_all(self):
-
+        """
+        Will send message/ping to all currently connected Nodes in Network.
+        Ping will be send for every Node in another Thread.
+        :return: None
+        """
         while self.running:
             copy = self.connected.copy()
             ping_threads = []

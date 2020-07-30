@@ -1,3 +1,7 @@
+"""
+Provides cmd controller class which prints debug information and can handle
+user input.
+"""
 from observer import Observer
 
 from src.beans import node_information_from_json
@@ -8,41 +12,51 @@ from src.pinger import CONNECTION_LOST, INCOMING_MESSAGE
 from src.message_dict import DEFAULT_MESSAGE, DISPATCH_MESSAGE, \
     JSON_SEPARATOR, HANDSHAKE_MESSAGE, VOTE_MESSAGE, MESSAGE_SEPARATOR
 
+#TODO: Implement dispatching by enter :q
 
 class CmdController(Observer):
-
+    """
+    Class which prints debug information and can handle user input.
+    """
     def __init__(self, node_manager: NodeManger):
         super().__init__()
         self.node_manger = node_manager
         self.own_information = node_manager.own_information
 
+
     def start_input_loop(self):
+        """
+        Start input and evaluate user input.
+        :return: None
+        """
         running = True
         while running:
             pass
 
     def update(self, update_value):
+        """
+        React to notification from observer and print debug information
+        :param update_value: notification from observed instance
+        :return: None
+        """
         update_value = update_value[0]
-        event = update_value.name
+        event = update_value.NAME
 
         if event == VOTE_FOR:
             voted_for = update_value.value
-            print('{} want {} as new master'.format(self.own_information.name, voted_for.name))
+            print('{} want {} as new master'.format(self.own_information.name, voted_for.NAME))
 
         elif event == NEW_ENTERING_NODE:
             node_info = update_value.value
             if node_info != self.own_information:
-                print(
-                    '{} add {} to connected by broadcast. Now are {} nodes connected '.format(self.own_information.name,
-                                                                                              node_info.name,
-                                                                                              len(
-                                                                                                  self.node_manger.connected)))
+                print('{} add {} to connected by broadcast. Now are {} nodes connected '.format(
+                    self.own_information.name, node_info.NAME, len(self.node_manger.connected)))
         elif event == CONNECTION_LOST:
             lost_node = update_value.value
-            print('{} lost connection from {}'.format(self.own_information.name, lost_node.name))
+            print('{} lost connection from {}'.format(self.own_information.name, lost_node.NAME))
         elif event == NEW_MASTER:
             new_master = update_value.value
-            print('{} set {} as new master'.format(self.own_information.name, new_master.name))
+            print('{} set {} as new master'.format(self.own_information.name, new_master.NAME))
 
         elif event == NO_MAJORITY_SHUTDOWN:
             print('{} dispatching their is not majority'.format(self.own_information.name))
@@ -60,13 +74,14 @@ class CmdController(Observer):
                     print('{} Dispatched from {}'.format(self.own_information.name, node_info.name))
                 elif subject == HANDSHAKE_MESSAGE:
                     if node_info != self.own_information:
-                        print('{} add {} to connected by broadcast. Now are {} nodes connected '.format(
-                            self.own_information.name,
-                            node_info.name,
-                            len(self.node_manger.connected)))
+                        print('{} add {} to connected by broadcast. '
+                              'Now are {} nodes connected '.format(self.own_information.name,
+                                                                   node_info.name,
+                                                                   len(self.node_manger.connected)))
                 elif subject == VOTE_MESSAGE:
                     voted_from = node_info
                     json = message.split(JSON_SEPARATOR)[2]
                     voted_node = node_information_from_json(json)
-                    print('{} received vote for {} form {}'.format(self.own_information.name, voted_node.name,
+                    print('{} received vote for {} form {}'.format(self.own_information.name,
+                                                                   voted_node.name,
                                                                    voted_from.name))

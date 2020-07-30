@@ -1,9 +1,16 @@
+"""
+Provides and observer that will execute specific python scripts if node changes status.
+"""
 import os
 from observer import Observer
 from src.vote_strategy import NEW_MASTER
 
 
 class StatusHandler(Observer):
+    """
+    Observer that will make an terminal call to start python scripts if node
+     changes master or slave status.
+    """
 
     def __init__(self, own_information, slave_script=None, master_script=None):
         super().__init__()
@@ -13,7 +20,7 @@ class StatusHandler(Observer):
 
     def update(self, new_value):
         new_value = new_value[0]
-        event = new_value.name
+        event = new_value.NAME
         master = new_value.value
         if event == NEW_MASTER:
             if master == self.own_information:

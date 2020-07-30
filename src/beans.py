@@ -1,17 +1,33 @@
+"""
+Beans contains data classes used for better communication of addresses and information
+regarding one node."""
+
 import json
 import time
 
 
 class NetAddress:
+    """
+    Dataclass for host ADDRESS and PORT.
+    """
+
     def __init__(self, host='0.0.0.0', port=3030):
         self.host = host
         self.port = port
 
-    def to_json(self):
+    def to_json(self) -> str:
+        """
+        Convert instance to json string.
+        :return: json string of instance
+        """
         return json.dumps(self, default=lambda o: o.__dict__,
                           sort_keys=True, indent=4)
 
     def to_tuple(self):
+        """
+        Convert instance to tuple of host and PORT.
+        :return: tuple of host and PORT
+        """
         return self.host, self.port
 
     def __eq__(self, o: object) -> bool:
@@ -24,6 +40,9 @@ class NetAddress:
 
 
 class NodeInformation:
+    """
+    Dataclass for information regarding one network node. Like ADDRESS, birthtime and NAME.
+    """
 
     def __init__(self,
                  net_address: NetAddress,
@@ -33,7 +52,11 @@ class NodeInformation:
         self.birthtime = birthtime
         self.name = name
 
-    def to_json(self):
+    def to_json(self) -> str:
+        """
+        Convert instance to tuple of host and PORT.
+        :return: tuple of host and PORT
+        """
         return json.dumps(self, default=lambda o: o.__dict__,
                           sort_keys=True, indent=4)
 
@@ -49,6 +72,11 @@ class NodeInformation:
 
 
 def node_information_from_json(json_string) -> NodeInformation:
+    """
+    Deserialized instance of NodeInformation.
+    :param json_string: json String of an instance
+    :return: Deserialized instance
+    """
     node_info_dict = json.loads(json_string)
     net_address = NetAddress(**node_info_dict['net_address'])
     node_info_obj = NodeInformation(**node_info_dict)
@@ -57,6 +85,11 @@ def node_information_from_json(json_string) -> NodeInformation:
 
 
 def net_address_information_from_json(json_string) -> NetAddress:
+    """
+     Deserialized instance of NetAddress.
+     :param json_string: json String of an instance
+     :return: Deserialized instance
+     """
     net_address_dict = json.loads(json_string)
     net_address = NetAddress(**net_address_dict)
     return net_address
