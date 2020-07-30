@@ -89,6 +89,8 @@ if __name__ == '__main__':
 
     BROAD_INFO = NetAddress(ARGS.broadcastAddress, ARGS.broadcastPort)
 
+    DEBUG = ARGS.debug
+
     if ARGS.use_port_instead_of_life_time is False:
         NODE_MANGER = create_node_manger_by_node_info(node_info=OWN_INFO,
                                                       broadcast_address=BROAD_INFO,
@@ -96,7 +98,7 @@ if __name__ == '__main__':
     else:
         NODE_MANGER = create_node_manger_by_node_info(node_info=OWN_INFO,
                                                       broadcast_address=BROAD_INFO,
-                                                      vote_by_port=True)
+                                                      vote_by_port=True, debug=DEBUG)
 
     SLAVE_SCRIPT = ARGS.slaveScript
 
@@ -112,13 +114,5 @@ if __name__ == '__main__':
     if MASTER_SCRIPT is not None or SLAVE_SCRIPT is not None:
         STATUS_HANDLER = StatusHandler(OWN_INFO, SLAVE_SCRIPT, MASTER_SCRIPT)
         NODE_MANGER.vote_strategy.attach(STATUS_HANDLER)
-
-    DEBUG = ARGS.debug
-
-    if DEBUG:
-        CMD_CONTROLLER = CmdController(NODE_MANGER)
-        NODE_MANGER.vote_strategy.attach(CMD_CONTROLLER)
-        NODE_MANGER.ping_man.attach(CMD_CONTROLLER)
-        NODE_MANGER.handshaker.attach(CMD_CONTROLLER)
 
     NODE_MANGER.start()

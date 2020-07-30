@@ -7,6 +7,7 @@ import time
 import synchronized_set
 
 from src.beans import NetAddress, NodeInformation
+from src.cmd_controller import CmdController
 from src.node_manger import NodeManger
 from src.handshake import Handshake, DEFAULT_BROADCAST
 from src.message_dict import MessageDict
@@ -30,7 +31,7 @@ def create_node_manger(address: str, port: int, name=None) -> NodeManger:
 
 def create_node_manger_by_node_info(node_info: NodeInformation,
                                     broadcast_address=DEFAULT_BROADCAST,
-                                    vote_by_port=False) -> NodeManger:
+                                    vote_by_port=False, debug=False) -> NodeManger:
     """
     Help method to create instance of NodeManger with observed instance of VoteStrategy and PingMan
     :param node_info: Info used for creation of instance
@@ -55,4 +56,11 @@ def create_node_manger_by_node_info(node_info: NodeInformation,
                          vote_strategy=vote_strategy)
     handshake.attach(manager)
     ping_man.attach(manager)
+
+    if debug:
+        CMD_CONTROLLER = CmdController(manager)
+        manager.vote_strategy.attach(CMD_CONTROLLER)
+        manager.ping_man.attach(CMD_CONTROLLER)
+        manager.handshaker.attach(CMD_CONTROLLER)
+
     return manager
