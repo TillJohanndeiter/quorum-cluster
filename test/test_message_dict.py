@@ -51,7 +51,7 @@ class MessageDictTestCase(unittest.TestCase):
         message_dict.add_dispatch_message(alice_information, SynchronizedSet(set()))
         t = threading.Thread(target=self.take_message, args=(message_dict,))
         t.start()
-        message_dict.wait_unit_everybody_received(DISPATCH_MESSAGE + MESSAGE_SEPARATOR + alice_information.to_json())
+        message_dict.wait_untill_everybody_received(DISPATCH_MESSAGE + MESSAGE_SEPARATOR + alice_information.to_json())
 
 
 
