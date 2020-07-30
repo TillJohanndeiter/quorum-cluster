@@ -40,23 +40,23 @@ class CmdController(Observer):
         :return: None
         """
         update_value = update_value[0]
-        event = update_value.NAME
+        event = update_value.name
 
         if event == VOTE_FOR:
             voted_for = update_value.value
-            print('{} want {} as new master'.format(self.own_information.name, voted_for.NAME))
+            print('{} want {} as new master'.format(self.own_information.name, voted_for.name))
 
         elif event == NEW_ENTERING_NODE:
             node_info = update_value.value
             if node_info != self.own_information:
                 print('{} add {} to connected by broadcast. Now are {} nodes connected '.format(
-                    self.own_information.name, node_info.NAME, len(self.node_manger.connected)))
+                    self.own_information.name, node_info.name, len(self.node_manger.connected)))
         elif event == CONNECTION_LOST:
             lost_node = update_value.value
-            print('{} lost connection from {}'.format(self.own_information.name, lost_node.NAME))
+            print('{} lost connection from {}'.format(self.own_information.name, lost_node.name))
         elif event == NEW_MASTER:
             new_master = update_value.value
-            print('{} set {} as new master'.format(self.own_information.name, new_master.NAME))
+            print('{} set {} as new master'.format(self.own_information.name, new_master.name))
 
         elif event == NO_MAJORITY_SHUTDOWN:
             print('{} dispatching their is not majority'.format(self.own_information.name))

@@ -20,7 +20,7 @@ class StatusHandler(Observer):
 
     def update(self, new_value):
         new_value = new_value[0]
-        event = new_value.NAME
+        event = new_value.name
         master = new_value.value
         if event == NEW_MASTER:
             if master == self.own_information:

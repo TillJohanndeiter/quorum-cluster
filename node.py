@@ -14,11 +14,11 @@ PORT_INFO = 'PORT in range of [1024...49151]'
 ADDRESS_INFO = 'ADDRESS e.g localhost or subnet ADDRESS'
 
 PARSER = argparse.ArgumentParser(description='Script to set up a node and ')
-PARSER.add_argument('ADDRESS',
+PARSER.add_argument('address',
                     help=ADDRESS_INFO, type=str,
                     default='0.0.0.0',
                     nargs='?')
-PARSER.add_argument('PORT',
+PARSER.add_argument('port',
                     help=PORT_INFO,
                     type=int,
                     default=8080,
@@ -34,7 +34,7 @@ PARSER.add_argument('broadcastPort',
                     type=int,
                     nargs='?')
 PARSER.add_argument('-n',
-                    '--NAME',
+                    '--name',
                     help='optional NAME especially if you want to '
                          'understand the DEBUG log',
                     default=None,
@@ -53,7 +53,7 @@ PARSER.add_argument('-s', '--slaveScript',
                          'node become normal or keep normal status',
                     type=str,
                     default=None)
-PARSER.add_argument('-d', '--DEBUG', help='Print DEBUG messages while running',
+PARSER.add_argument('-d', '--debug', help='Print DEBUG messages while running',
                     action='store_true')
 
 
