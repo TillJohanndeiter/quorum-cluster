@@ -42,7 +42,7 @@ class StandardNetworkCase(unittest.TestCase):
             bob.kill()
 
     def test_reentry_if_name_is_same(self):
-        global alice, bob, peter
+        global alice, alice2, bob, peter
         try:
             alice_information = NodeInformation(NetAddress(port=3001), birthtime=50, name='alice')
             bob_information = NodeInformation(NetAddress(port=4001), birthtime=100, name='bob')
