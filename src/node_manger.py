@@ -9,17 +9,15 @@ from src.message_dict import MessageDict, DEFAULT_MESSAGE, DISPATCH_MESSAGE, \
 from src.pinger import INCOMING_MESSAGE, CONNECTION_LOST, PingMan
 from src.handshake import NEW_ENTERING_NODE, Handshaker
 from src.beans import NodeInformation, node_information_from_json
-from src.vote_strategy import TimeStrategy, NEW_MASTER, NO_MAJORITY_SHUTDOWN
+from src.vote_strategy import VoteStrategy, NEW_MASTER, NO_MAJORITY_SHUTDOWN
 
 TIME_BETWEEN_HANDSHAKE = 2
 
 
-# TODO: Move voting actions to own class
-
 class NodeManger(Observer):
 
     def __init__(self, own_information: NodeInformation, ping_man: PingMan, handshaker: Handshaker,
-                 message_dict: MessageDict, connected: SynchronizedSet):
+                 message_dict: MessageDict, connected: SynchronizedSet, vote_strategy: VoteStrategy):
         super(NodeManger, self).__init__()
         self.own_information = own_information
         self.ping_man = ping_man
@@ -28,7 +26,7 @@ class NodeManger(Observer):
         self.connected = connected
         self.dispatched = SynchronizedSet(set())
         self.lost = SynchronizedSet(set())
-        self.vote_strategy = TimeStrategy(self.own_information, self.message_dict)
+        self.vote_strategy = vote_strategy
         self.vote_strategy.attach(self)
         self.master = None
         self.running = False

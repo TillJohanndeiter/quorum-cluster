@@ -9,7 +9,7 @@ from src.message_dict import DEFAULT_MESSAGE, DISPATCH_MESSAGE, \
     JSON_SEPARATOR, HANDSHAKE_MESSAGE, VOTE_MESSAGE, MESSAGE_SEPARATOR
 
 
-class CmdContoller(Observer):
+class CmdController(Observer):
 
     def __init__(self, node_manager: NodeManger):
         super().__init__()
@@ -27,7 +27,7 @@ class CmdContoller(Observer):
 
         if event == VOTE_FOR:
             voted_for = update_value.value
-            print('{} want {}'.format(self.own_information.name, voted_for.name))
+            print('{} want {} as new master'.format(self.own_information.name, voted_for.name))
 
         elif event == NEW_ENTERING_NODE:
             node_info = update_value.value
