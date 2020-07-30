@@ -73,7 +73,10 @@ class MessageDict:
         :param node:
         :return: None
         """
-        self.dict[node] = queue.Queue()
+        self.lock.acquire()
+        if node not in self.dict.keys():
+            self.dict[node] = queue.Queue()
+        self.lock.release()
 
     def add_handshake_message(self, own: NodeInformation, target: NodeInformation):
         """
