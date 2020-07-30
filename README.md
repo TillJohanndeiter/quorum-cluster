@@ -72,14 +72,60 @@ Till received vote for Kevin form Kevin
 Till set Kevin as new master
 ```
 
-For better readability. This name will also be used for reentering in current 
-Network if a node dispatched and come back later.
+For better readability of logs you can give the node a nickname by set  
+`-n=Your_Node_Name`  
+This name will also be used for reentering in current Network if a node  
+dispatched and reentering later.
 
-If you want to dispatch your node enter `:q` in the command line. If you exit
+If you want to dispatch your node enter `:q` in the command line. If you exit  
 by STRG + C then the node will be killed and marked as lost from existing Nodes
 
 Example command:
 
 `python node.py 0.0.0.0 6170 -d -m=i_am_master.py -s=i_am_slave.py -n=Till -d`
+
+
+**Quorum algorithm**
+
+To give you a basic understanding how a new master is calculated if a node  
+detect changes in a network you can orientate . Basically every node use a  
+metric based on time or the port number and send a vote message by a TCP socket  
+to each other connected Node. Base on own an recieving Votes the new master is  
+calculated by absolute majoritiy. If their is none the largest part will surivive.  
+Others will dispatch. If more nodes lost than connect the node will dispatch,  
+becausethe network cannot build a majority any longer  
+
+    if network changes (Master or Slave dispatching, killed or enter network):  
+
+        if PortStrategy:  
+            select connected node with lowest port  
+        if TimeStrategy:  
+            select connected node furthest back initialisation time  
+
+        send_vote_to_connected_nodes  
+ 
+        for every incoming_vote:  
+            if already_recived_vote_from_node:  
+                check_which_is_younger  
+            add_vote_to_voting_dict  
+
+            if more_lost_than_connected:  
+                dispatch  
+
+            if all_connected_nodes_voted:  
+                calc_most_voted_note  
+            
+                if no_abs_majority:
+                    largest_network_subpart_will_survive_rest_dispatch  
+                 
+
+                set_net_master  
+
+
+**License**
+
+I'm a big fan of open source software, so i decided to use 'The Unlicense' to  
+allow maximal freedom of reusing.
+
 
 
