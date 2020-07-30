@@ -51,7 +51,6 @@ class PingMan(Observable):
 
     def __set_up_server_socket(self):
 
-        in_socket = None
         try:
             self.server_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
             self.server_socket.bind(self.own_information.net_address.to_tuple())
@@ -127,7 +126,8 @@ class PingMan(Observable):
 
         if ping_counter == MAX_PING_TRY and target in self.connected:
             print('{} could not send \n {}  \n to send to {}'.format(self.own_information.name, message, target.name))
-            self.notify(UpdateValue(CONNECTION_LOST, target))
+            t = Thread(target=self.notify, args=(UpdateValue(CONNECTION_LOST, target), ))
+            t.start()
         #else:
             # print('{} send \n {}  \n to send to {}'.format(self.own_information.name, message, target.name))
 
