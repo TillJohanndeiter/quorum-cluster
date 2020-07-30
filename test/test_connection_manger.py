@@ -56,10 +56,10 @@ class StandardNetworkCase(unittest.TestCase):
         self.assertEqual(bob.master, alice_information)
 
 
-def set_up_peter_bob_alice(alice_information, bob_information, peter_information):
-    alice = create_node_manger_by_node_info(alice_information)
-    bob = create_node_manger_by_node_info(bob_information)
-    peter = create_node_manger_by_node_info(peter_information)
+def set_up_peter_bob_alice(alice_information, bob_information, peter_information, by_port = False):
+    alice = create_node_manger_by_node_info(alice_information, vote_by_port=by_port)
+    bob = create_node_manger_by_node_info(bob_information, vote_by_port=by_port)
+    peter = create_node_manger_by_node_info(peter_information, vote_by_port=by_port)
     alice.start()
     bob.start()
     peter.start()
@@ -146,22 +146,70 @@ class AdvancedNetworkCase(unittest.TestCase):
             bob.kill()
             peter.kill()
 
-    def test_changing_master(self):
+    def test_changing_master_by_birthtime(self):
         global alice, bob, peter, dieter
         try:
             alice_information = NodeInformation(NetAddress(port=3010), birthtime=50, name='alice')
             bob_information = NodeInformation(NetAddress(port=4100), birthtime=100, name='bob')
             peter_information = NodeInformation(NetAddress(port=5150), birthtime=200, name='peter')
-            dieter_information = NodeInformation(NetAddress(port=8005), birthtime=60, name='dieter')
+            dieter_information = NodeInformation(NetAddress(port=3011), birthtime=60, name='dieter')
             alice, bob, peter = set_up_peter_bob_alice(alice_information, bob_information, peter_information)
-            dieter = create_node_manger_by_node_info(dieter_information)
+            dieter = create_node_manger_by_node_info(dieter_information, vote_by_port=True)
             dieter.start()
             time.sleep(3)
             self.assertEqual(alice.connected, SynchronizedSet({peter_information, bob_information, dieter_information}))
             self.assertEqual(bob.connected, SynchronizedSet({alice_information, peter_information, dieter_information}))
             self.assertEqual(peter.connected, SynchronizedSet({alice_information, bob_information, dieter_information}))
             self.assertEqual(dieter.connected, SynchronizedSet({alice_information, bob_information, peter_information}))
+            self.assertEqual(alice.master, alice_information)
+            self.assertEqual(bob.master, alice_information)
+            self.assertEqual(peter.master, alice_information)
+            self.assertEqual(dieter.master, alice_information)
+            alice.kill()
+            time.sleep(8)
 
+            self.assertEqual(bob.connected, SynchronizedSet({peter_information, dieter_information}))
+            self.assertEqual(peter.connected, SynchronizedSet({bob_information, dieter_information}))
+            self.assertEqual(dieter.connected, SynchronizedSet({bob_information, peter_information}))
+
+            self.assertEqual(bob.lost, SynchronizedSet({alice_information}))
+            self.assertEqual(peter.lost, SynchronizedSet({alice_information}))
+            self.assertEqual(dieter.lost, SynchronizedSet({alice_information}))
+
+            self.assertEqual(bob.dispatched, SynchronizedSet({}))
+            self.assertEqual(peter.dispatched, SynchronizedSet({}))
+            self.assertEqual(dieter.dispatched, SynchronizedSet({}))
+
+            self.assertEqual(bob.master, dieter_information)
+            self.assertEqual(peter.master, dieter_information)
+            self.assertEqual(dieter.master, dieter_information)
+
+        finally:
+            alice.kill()
+            bob.kill()
+            peter.kill()
+            dieter.kill()
+
+
+    def test_changing_master_by_port(self):
+        global alice, bob, peter, dieter
+        try:
+            alice_information = NodeInformation(NetAddress(port=3051), birthtime=50, name='alice')
+            bob_information = NodeInformation(NetAddress(port=4111), birthtime=100, name='bob')
+            peter_information = NodeInformation(NetAddress(port=5151), birthtime=200, name='peter')
+            dieter_information = NodeInformation(NetAddress(port=3121), birthtime=60, name='dieter')
+            alice, bob, peter = set_up_peter_bob_alice(alice_information, bob_information, peter_information, True)
+            dieter = create_node_manger_by_node_info(dieter_information, True)
+            dieter.start()
+            time.sleep(3)
+            self.assertEqual(alice.connected, SynchronizedSet({peter_information, bob_information, dieter_information}))
+            self.assertEqual(bob.connected, SynchronizedSet({alice_information, peter_information, dieter_information}))
+            self.assertEqual(peter.connected, SynchronizedSet({alice_information, bob_information, dieter_information}))
+            self.assertEqual(dieter.connected, SynchronizedSet({alice_information, bob_information, peter_information}))
+            self.assertEqual(alice.master, alice_information)
+            self.assertEqual(bob.master, alice_information)
+            self.assertEqual(peter.master, alice_information)
+            self.assertEqual(dieter.master, alice_information)
             alice.kill()
             time.sleep(8)
 
