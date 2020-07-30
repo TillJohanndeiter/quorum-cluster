@@ -153,7 +153,7 @@ class NodeManger(Observer):
             self.__handle_dispatch_msg(node_info)
             self.message_dict.delete_message_for_node(node_info)
         elif subject == HANDSHAKE_MESSAGE:
-            self.handle_handshake_message(node_info)
+            self.__handle_handshake_message(node_info)
         elif subject == VOTE_MESSAGE:
             voted_from = node_info
             json = msg.split(JSON_SEPARATOR)[2]
@@ -163,7 +163,7 @@ class NodeManger(Observer):
                                         self.dispatched,
                                         self.lost)
 
-    def handle_handshake_message(self, node_info):
+    def __handle_handshake_message(self, node_info):
         """
         Add Node to connected and remove old node form dispatched if
         new node has same name. After this will initiate calc of new master.
@@ -174,9 +174,9 @@ class NodeManger(Observer):
             self.message_dict.add_node(node_info)
             self.__remove_node_from_dispatch_if_same_name(node_info)
             self.connected.add(node_info)
-            print('{} add {} to connected len of connected {}'.format(self.own_information.name,
+            print('{} add {} to connected len of connected {}. Json: \n {} \n'.format(self.own_information.name,
                                                                       node_info.name,
-                                                                      len(self.connected)))
+                                                                      len(self.connected), node_info.to_json()))
         if node_info in self.dispatched:
             self.dispatched.remove(node_info)
         if node_info in self.lost:

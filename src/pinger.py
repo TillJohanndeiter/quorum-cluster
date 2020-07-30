@@ -4,7 +4,8 @@ Provides class responsible for send messages and check if target is still in net
 import struct
 import time
 from threading import Thread
-from socket import AF_INET, SOCK_STREAM, IPPROTO_TCP, SOMAXCONN, SHUT_RDWR, socket, timeout
+from socket import AF_INET, SOCK_STREAM, IPPROTO_TCP, SOMAXCONN, SHUT_RDWR, SO_REUSEADDR, \
+    socket, timeout, SOL_SOCKET
 from synchronized_set import SynchronizedSet
 from observer import Observable
 from src.message_dict import MessageDict
@@ -78,6 +79,7 @@ class PingMan(Observable):
         """
         try:
             self.server_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+            self.server_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
             self.server_socket.bind(self.own_information.net_address.to_tuple())
             self.server_socket.listen(SOMAXCONN)
 
@@ -86,7 +88,7 @@ class PingMan(Observable):
         finally:
             self.server_socket.close()
 
-    #TODO: Check if thread for update is more stable
+    # TODO: Check if thread for update is more stable
     def __recive_message(self):
         """
         Accept incoming connection, read header with length and message.
@@ -95,20 +97,23 @@ class PingMan(Observable):
         """
         try:
             in_socket, _ = self.server_socket.accept()
-            raw_msglen = _read_number_of_bytes(in_socket, 4)
-            if raw_msglen:
-                msg_len = struct.unpack('>I', raw_msglen)[0]
-                msg = _read_number_of_bytes(in_socket, msg_len)
-                if msg is not None:
-                    msg = msg.decode(UTF_8)
-                    if msg != '':
-                        self.notify(UpdateValue(INCOMING_MESSAGE, msg))
-            if in_socket is not None:
-                in_socket.close()
+            Thread(target=self.__bla, args=(in_socket,)).start()
         except timeout:
             pass
         except OSError:
             pass
+
+    def __bla(self, in_socket):
+        raw_msglen = _read_number_of_bytes(in_socket, 4)
+        if raw_msglen:
+            msg_len = struct.unpack('>I', raw_msglen)[0]
+            msg = _read_number_of_bytes(in_socket, msg_len)
+            if msg is not None:
+                msg = msg.decode(UTF_8)
+                if msg != '':
+                    self.notify(UpdateValue(INCOMING_MESSAGE, msg))
+        if in_socket is not None:
+            in_socket.close()
 
     def __update_message(self, in_socket: socket):
         """
