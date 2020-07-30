@@ -53,10 +53,10 @@ class MessageDict:
                 DISPATCH_MESSAGE + JSON_SEPARATOR + own_information.to_json(),
                 target)
 
-    def wait_unit_everybody_received(self, message):
+    def wait_untill_everybody_received(self, message):
         while not self.check_if_all_get_message(message):
             time.sleep(1)
-        time.sleep(3)
+        time.sleep(1)
 
     def check_if_all_get_message(self, message):
         all_get_message = True
@@ -68,10 +68,17 @@ class MessageDict:
 
     def add_vote(self, voted_node: NodeInformation, own_info: NodeInformation,
                  node_information: synchronized_set.SynchronizedSet):
-        for target in node_information:
+
+        for target in node_information.copy():
             self.add_message_for_node(VOTE_MESSAGE + JSON_SEPARATOR
                                       + own_info.to_json() + JSON_SEPARATOR + voted_node.to_json(),
                                       target)
+
+    def delete_message_for_node(self, node_info: NodeInformation):
+        self.lock.acquire()
+        if node_info in self.dict.keys():
+            self.dict[node_info].queue.clear()
+        self.lock.release()
 
     def clear(self):
         self.dict.clear()

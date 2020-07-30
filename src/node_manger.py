@@ -47,7 +47,7 @@ class NodeManger(Observer):
     def dispatch(self):
         self.handshaker.kill()
         self.message_dict.add_dispatch_message(self.own_information, self.connected)
-        self.message_dict.wait_unit_everybody_received(self.own_dispatch_message())
+        self.message_dict.wait_untill_everybody_received(self.own_dispatch_message())
         self.connected.clear()
         self.ping_man.kill()
         self.running = False
@@ -74,10 +74,14 @@ class NodeManger(Observer):
         if lost_node in self.connected and lost_node not in self.dispatched:
             self.connected.remove(lost_node)
             self.lost.add(lost_node)
-        self.vote_strategy.calc_new_master_and_add_message(self.connected, self.dispatched, self.lost)
         if len(self.lost) > len(self.connected):
             print('{} dispatching because more lost than connected'.format(self.own_information.name))
-            self.dispatch()
+            if self.running:
+                self.dispatch()
+        else:
+            self.vote_strategy.calc_new_master_and_add_message(self.connected, self.dispatched, self.lost)
+        self.message_dict.delete_message_for_node(lost_node)
+
 
     def __handle_messages(self, new_value):
         messages = str(new_value.value).split(MESSAGE_SEPARATOR)
@@ -99,10 +103,17 @@ class NodeManger(Observer):
             if node_info in self.lost:
                 self.lost.remove(node_info)
             self.dispatched.add(node_info)
-            self.vote_strategy.calc_new_master_and_add_message(self.connected, self.dispatched, self.lost)
+            if len(self.lost) > len(self.connected):
+                print('{} dispatching because more lost than connected'.format(self.own_information.name))
+                if self.running:
+                    self.dispatch()
+            else:
+                self.vote_strategy.calc_new_master_and_add_message(self.connected, self.dispatched, self.lost)
+            self.message_dict.delete_message_for_node(node_info)
         elif subject == HANDSHAKE_MESSAGE:
             if node_info != self.own_information:
                 self.message_dict.add_node(node_info)
+                self.remove_node_from_dispatch_if_same_name(node_info)
                 self.connected.add(node_info)
                 print('{} add {} to connected len of connected {}'.format(self.own_information.name, node_info.name,
                                                                           len(self.connected)))
@@ -117,9 +128,15 @@ class NodeManger(Observer):
             voted_node = node_information_from_json(json)
             self.vote_strategy.vote_for(voted_from, voted_node, self.connected, self.dispatched, self.lost)
 
+    def remove_node_from_dispatch_if_same_name(self, node_info):
+        for old_node in self.dispatched.copy():
+            if old_node.name == node_info.name and old_node in self.dispatched:
+                self.dispatched.remove(old_node)
+
     def __handle_entering_node(self, new_value):
         node_info = new_value.value
         if node_info != self.own_information:
             self.message_dict.add_handshake_message(own=self.own_information, target=node_info)
+            self.remove_node_from_dispatch_if_same_name(node_info)
             self.connected.add(node_info)
             self.vote_strategy.calc_new_master_and_add_message(self.connected, self.dispatched, self.lost)
