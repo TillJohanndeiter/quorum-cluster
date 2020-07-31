@@ -14,6 +14,7 @@ alice_information = NodeInformation(NetAddress(port=4040), name='alice')
 bob_information = NodeInformation(NetAddress(port=5050), name='bob')
 peter_information = NodeInformation(NetAddress(port=6060), name='peter')
 
+bob_information.wish_master = peter_information
 
 class MessageDictTestCase(unittest.TestCase):
     """
@@ -26,7 +27,7 @@ class MessageDictTestCase(unittest.TestCase):
         retrieves correctly contacted string with message separator.
         :return:
         """
-        message_dict = MessageDict()
+        message_dict = MessageDict(bob_information)
         message_dict.add_message_for_node("test", alice_information)
         message_dict.add_message_for_node("test2", alice_information)
         nextMsg = message_dict.get_next_message(alice_information)
@@ -39,7 +40,7 @@ class MessageDictTestCase(unittest.TestCase):
         retrieves correctly contacted string with message separator.
         :return: None
         """
-        message_dict = MessageDict()
+        message_dict = MessageDict(bob_information)
         message_dict.add_node(alice_information)
         message_dict.add_node(bob_information)
         message_dict.add_node(peter_information)
@@ -54,7 +55,7 @@ class MessageDictTestCase(unittest.TestCase):
         Test if clear methods remove all queues form message dict
         :return: None
         """
-        message_dict = MessageDict()
+        message_dict = MessageDict(bob_information)
         message_dict.add_message_for_node("test", alice_information)
         message_dict.clear()
         self.assertEqual(len(message_dict.dict), 0)
@@ -64,11 +65,11 @@ class MessageDictTestCase(unittest.TestCase):
         Test if in case of a empty message queue correct default message is returned.
         :return: None
         """
-        message_dict = MessageDict()
+        message_dict = MessageDict(bob_information)
         message_dict.add_message_for_node("test", alice_information)
         nextMsg = message_dict.get_next_message(alice_information)
         self.assertEqual('test', nextMsg)
-        self.assertEqual(DEFAULT_MESSAGE + JSON_SEPARATOR, message_dict.get_next_message(alice_information))
+        self.assertEqual(DEFAULT_MESSAGE + JSON_SEPARATOR + peter_information.to_json(), message_dict.get_next_message(alice_information))
 
     def test_wait_unit_all_received(self):
         """
@@ -76,7 +77,7 @@ class MessageDictTestCase(unittest.TestCase):
         endless loop after all messages has been taken.
         :return: None
         """
-        message_dict = MessageDict()
+        message_dict = MessageDict(bob_information)
         message_dict.add_node(bob_information)
         message_dict.add_node(peter_information)
         message_dict.add_dispatch_message(alice_information, SynchronizedSet(set()))
