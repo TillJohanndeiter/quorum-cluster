@@ -7,17 +7,17 @@ One of the nodes has the role of a master and the nodes will decide base on a
 quorum who will be selected as master especially in case of unexpected shutdown  
 of the current master.
 
-The code is documented and corresponds to pylint codestyle. For the project  
-i used a CI pipeline and issue managment of Gitlab. Relevant classes were  
+The code is documented and corresponds to pylint code style. For the project  
+I used a CI pipeline and issue management of Gitlab. Relevant classes were  
 created with test driven development.
 
 **Installation**
 
-To clone the repository use command:
+To clone the repository, use command:
 
 `git clone https://gitlab.ub.uni-bielefeld.de/till.johanndeiter/quorumCluster.git`
 
-(Optional) you could use a virtual enviroment to avoid dependecy problems.  
+(Optional) you could use a virtual environment to avoid dependency problems.  
 For this you have to create one and activate it:
 
 `python3 -m venv env`
@@ -39,7 +39,7 @@ You can start one Node directly by using the node.py script.
 
 
 The first four arguments are address, port, broadcast address and broadcast port.  
-As an default the combination  
+As a default the combination  
 
 `'0.0.0.0' 8080 '255.255.255.255' 5595 `  
 
@@ -52,7 +52,7 @@ If you want, that instead of birthtime/time of initalization of one node the
 lowest port will be used for voting in quorum, you can add the 
 `--use_port_instead_of_life_time` flag.
 
-For testing issues you can pass with
+For testing issues, you can pass with
 
 `-m=i_am_master.py `
 
@@ -62,7 +62,7 @@ and for slave
 
 a path to python scripts which are executed if the node change his role.
 
-With `-d` you get a debug log with more information about e.g. who recieved  
+With `-d` you get a debug log with more information about e.g. who received    
 a vote or number of connected notes.
 
 ```
@@ -73,7 +73,7 @@ Doof set Dick as new master
 
 For better readability of logs you can give the node a nickname by set  
 `-n=Your_Node_Name`  
-This name will also be used for reentering if a node dispatched and come back 
+This name will also be used for re-entering if a node dispatched and come back 
 later.
 
 If you want to dispatch your node enter 'q` in the command line. If you exit  
@@ -86,9 +86,9 @@ Example command:
 
 **Quorum algorithm**
 
-Each node calculate based on time or port metric his wanted master  
+Each node calculates based on time or port metric his wanted master  
 and send constantly information about his vote to other nodes.  
-If a node detect changes (New Node or Lost/Dispatching Slave/Master)  
+If a node detects changes (New Node or Lost/Dispatching Slave/Master)  
 it will change his voted master and change his transmitted information per  
 TCP socket. Also each Node constantly listen to incoming messages from other    
 nodes and evaluate most voted master.
