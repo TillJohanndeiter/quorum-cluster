@@ -87,7 +87,7 @@ Example command:
 **Quorum algorithm**
 
 Each node calculate based on time or port metric his wanted master  
-and send constantly information about his vote to other nodes. 
+and send constantly information about his vote to other nodes.  
 If a node detect changes (New Node or Lost/Dispatching Slave/Master)  
 it will change his voted master and change his transmitted information per  
 TCP socket. Also each Node constantly listen to incoming messages from other    
@@ -129,8 +129,8 @@ will dispatch, because the network cannot build a majority any longer.
 
 **Tests**
 
-In test/ are unittest classes and integration_tests.py which contains 
-bigger integrations test especially for determination of a master in different
+In test/ are unittest classes and integration_tests.py which contains  
+bigger integrations test especially for determination of a master in different  
 scenarios.
 
 ```
