@@ -94,7 +94,7 @@ if __name__ == '__main__':
     if ARGS.use_port_instead_of_life_time is False:
         NODE_MANGER = create_node_manger_by_node_info(node_info=OWN_INFO,
                                                       broadcast_address=BROAD_INFO,
-                                                      vote_by_port=False)
+                                                      vote_by_port=False, debug=DEBUG)
     else:
         NODE_MANGER = create_node_manger_by_node_info(node_info=OWN_INFO,
                                                       broadcast_address=BROAD_INFO,

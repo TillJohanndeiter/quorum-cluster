@@ -2,6 +2,7 @@
 Provides cmd controller class which prints debug information and can handle
 user input.
 """
+from threading import Thread
 from observer import Observer
 
 from src.beans import node_information_from_json
@@ -29,9 +30,15 @@ class CmdController(Observer):
         Start input and evaluate user input.
         :return: None
         """
+        Thread(target=self.input_loop).start()
+
+    def input_loop(self):
         running = True
         while running:
-            pass
+            name = input()
+            if name == 'q':
+                self.node_manger.dispatch()
+                running = False
 
     def update(self, update_value):
         """
@@ -71,7 +78,7 @@ class CmdController(Observer):
                 json = message.split(JSON_SEPARATOR)[1]
                 node_info = node_information_from_json(json)
                 if subject == DISPATCH_MESSAGE:
-                    print('{} Dispatched from {}'.format(self.own_information.name, node_info.name))
+                    print('{} Dispatched from {}'.format(node_info.name, self.own_information.name))
                 elif subject == HANDSHAKE_MESSAGE:
                     if node_info != self.own_information:
                         print('{} add {} to connected by broadcast. '

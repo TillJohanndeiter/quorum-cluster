@@ -62,5 +62,6 @@ def create_node_manger_by_node_info(node_info: NodeInformation,
         manager.vote_strategy.attach(CMD_CONTROLLER)
         manager.ping_man.attach(CMD_CONTROLLER)
         manager.handshaker.attach(CMD_CONTROLLER)
+        CMD_CONTROLLER.start_input_loop()
 
     return manager
