@@ -1,3 +1,6 @@
+"""
+Contains testcases for vote calculation.
+"""
 import unittest
 
 from src.vote_strategy import PortStrategy, TimeStrategy
@@ -12,11 +15,19 @@ all_information = [bob_information, alice_information, peter_information]
 class VoteStrategyCase(unittest.TestCase):
 
     def test_port_strategy(self):
+        """
+        Check if strategy calculate node alice with lowest port correctly as new master.
+        :return: None
+        """
         port_strategy = PortStrategy(None, None)
         result = port_strategy._get_best_node(all_information)
         self.assertEqual(result, alice_information)
 
     def test_time_strategy(self):
+        """
+        Check if strategy calculate node bob with lowest birthtime correctly as new master.
+        :return:
+        """
         port_strategy = TimeStrategy(None, None)
         result = port_strategy._get_best_node(all_information)
         self.assertEqual(result, peter_information)

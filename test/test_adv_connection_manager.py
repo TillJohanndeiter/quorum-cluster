@@ -1,3 +1,6 @@
+"""
+Contain class that cover network use cases especially changes of master use cases.
+"""
 import time
 import unittest
 
@@ -11,6 +14,11 @@ from test.test_simple_connection_manger import set_up_peter_bob_alice
 class AdvancedNetworkCase(unittest.TestCase):
 
     def test_handshake_with_three_nodes(self):
+        """
+        Set up two nodes. Check if both are connected and have same master. Then
+        will start third instance and will again check if connected and same master
+        :return: None
+        """
         global alice, bob, peter
         try:
             alice_information = NodeInformation(NetAddress(port=3000), birthtime=50, name='alice')
@@ -40,6 +48,11 @@ class AdvancedNetworkCase(unittest.TestCase):
             peter.kill()
 
     def test_reenter_with_same_name(self):
+        """
+        Test if a reentering of an instance bob and bob2 on different port is
+        registered by instances in a network of three nodes.
+        :return: None
+        """
         global alice, bob, peter
         try:
             alice_information = NodeInformation(NetAddress(port=3199), birthtime=50, name='alice')
@@ -87,6 +100,11 @@ class AdvancedNetworkCase(unittest.TestCase):
             peter.kill()
 
     def test_kill_detected(self):
+        """
+        Test if unexpected shutdown/kill is registered by other instances
+        and marked as lost and removed from connected.
+        :return: None
+        """
         global alice, bob, peter
         try:
             alice_information = NodeInformation(NetAddress(port=6001), name='alice')
@@ -112,6 +130,12 @@ class AdvancedNetworkCase(unittest.TestCase):
             peter.kill()
 
     def test_dispatching(self):
+        """
+        Check if in a network of three nodes dispatching from node peter
+        is registered by others nodes. So node is in dispatched and not in connected
+        or lost
+        :return: None
+        """
         global alice, bob, peter
         alice_information = NodeInformation(NetAddress(port=6013), name='alice')
         bob_information = NodeInformation(NetAddress(port=7015), name='bob')
@@ -135,6 +159,11 @@ class AdvancedNetworkCase(unittest.TestCase):
             peter.kill()
 
     def test_changing_master_by_birthtime(self):
+        """
+        Check if in a network of four nodes master is correctly determined and after
+        master is killed other nodes can determined a new master by using TimeStrategy
+        :return: None
+        """
         global alice, bob, peter, dieter
         try:
             alice_information = NodeInformation(NetAddress(port=3012), birthtime=50, name='alice')
@@ -142,7 +171,7 @@ class AdvancedNetworkCase(unittest.TestCase):
             peter_information = NodeInformation(NetAddress(port=5151), birthtime=200, name='peter')
             dieter_information = NodeInformation(NetAddress(port=3013), birthtime=60, name='dieter')
             alice, bob, peter = set_up_peter_bob_alice(alice_information, bob_information, peter_information)
-            dieter = create_node_manger_by_node_info(dieter_information, vote_by_port=True)
+            dieter = create_node_manger_by_node_info(dieter_information, vote_by_port=True, debug=True)
             dieter.start()
             time.sleep(3)
             self.assertEqual(alice.connected, SynchronizedSet({peter_information, bob_information, dieter_information}))
@@ -178,9 +207,12 @@ class AdvancedNetworkCase(unittest.TestCase):
             peter.kill()
             dieter.kill()
 
-
-#TODO: sometimes test fail
     def test_changing_master_by_port(self):
+        """
+            Check if in a network of four nodes master is correctly determined and after
+            master is killed other nodes can determined a new master by using PortStrategy
+            :return: None
+        """
         global alice, bob, peter, dieter
         try:
             alice_information = NodeInformation(NetAddress(port=3051), birthtime=50, name='alice')
@@ -188,7 +220,7 @@ class AdvancedNetworkCase(unittest.TestCase):
             peter_information = NodeInformation(NetAddress(port=5155), birthtime=200, name='peter')
             dieter_information = NodeInformation(NetAddress(port=3121), birthtime=60, name='dieter')
             alice, bob, peter = set_up_peter_bob_alice(alice_information, bob_information, peter_information, True)
-            dieter = create_node_manger_by_node_info(dieter_information, vote_by_port=True)
+            dieter = create_node_manger_by_node_info(dieter_information, vote_by_port=True, debug=True)
             dieter.start()
             time.sleep(3)
             self.assertEqual(alice.connected, SynchronizedSet({peter_information, bob_information, dieter_information}))
@@ -225,6 +257,10 @@ class AdvancedNetworkCase(unittest.TestCase):
             dieter.kill()
 
     def test_shutdown_if_two_of_four_be_killed(self):
+        """
+        Check if nodes make shutdown, if 2 of 4 nodes are killed-
+        :return: None
+        """
         global alice, bob, peter, dieter
         try:
             alice_information = NodeInformation(NetAddress(port=3055), birthtime=50, name='alice')
@@ -255,6 +291,11 @@ class AdvancedNetworkCase(unittest.TestCase):
             dieter.kill()
 
     def test_slave_is_killed_master_stay_same(self):
+        """
+        Check if network still determine master correctly if a slave/non-master has
+        been killed.
+        :return: None
+        """
         global alice, bob, peter, dieter
         try:
             alice_information = NodeInformation(NetAddress(port=3009), birthtime=50, name='alice')
@@ -299,6 +340,11 @@ class AdvancedNetworkCase(unittest.TestCase):
             dieter.kill()
 
     def test_changing_master_after_dispatching(self):
+        """
+        Test correct determination of master in a network of four nodes after
+        master determined first dispatched.
+        :return: None
+        """
         global alice, bob, peter, dieter
         try:
             alice_information = NodeInformation(NetAddress(port=3010), birthtime=50, name='alice')
