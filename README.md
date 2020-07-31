@@ -4,7 +4,7 @@
 
 Welcome to my implementation of a decentralized network of multiple Nodes.  
 One of the nodes has the role of a master and the nodes will decide base on a  
-quorum who will be selected as master especially in case of unexpected shutdown
+quorum who will be selected as master especially in case of unexpected shutdown  
 of the current master.
 
 The code is documented and corresponds to pylint codestyle. For the project  
@@ -88,9 +88,9 @@ Example command:
 
 Each node calculate based on time or port metric his wanted master 
 and send constantly information about his vote to other nodes. 
-If a node detect changes (New Node or Lost/Dispatching Slave/Master)
+If a node detect changes (New Node or Lost/Dispatching Slave/Master)  
 it will change his voted master and change his transmitted information per  
-TCP socket. Also each Node constantly listen to incoming messages from other  
+TCP socket. Also each Node constantly listen to incoming messages from other    
 nodes and evaluate most voted master.
 
 So you can imagine the network as a constant election.
