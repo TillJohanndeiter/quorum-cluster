@@ -2,14 +2,18 @@
 
 **Network programming project SS20**
 
-Welcome to my implementation of a decentralized network of different Nodes.  
+Welcome to my implementation of a decentralized network of multiple Nodes.  
 One of the nodes has the role of a master and the nodes will decide base on a  
 quorum who will be selected as master especially in case of unexpected shutdown
 of the current master.
 
+The code is documented and corresponds to pylint codestyle. For the project  
+i used a CI pipeline and issue managment of Gitlab. Relevant classes were  
+created with test driven development.
+
 **Installation**
 
-To clone the repository use following command:
+To clone the repository use command:
 
 `git clone https://gitlab.ub.uni-bielefeld.de/till.johanndeiter/quorumCluster.git`
 
