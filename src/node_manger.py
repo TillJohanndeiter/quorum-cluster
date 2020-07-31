@@ -37,25 +37,23 @@ class NodeManger(Observer):
         self.lost = SynchronizedSet(set())
         self.vote_strategy = vote_strategy
         self.vote_strategy.attach(self)
+        self.master = None
         self.running = False
 
     def start(self):
 
         """
         Start instance of PingMan and Handshake. After that it will calculate init
-        master.
+        wish_master.
         :return: None
         """
+        self.vote_strategy.calc_new_master_and_add_message(self.connected, self.dispatched, self.lost)
         try:
             self.running = True
             time.sleep(TIME_BETWEEN_HANDSHAKE)
             self.ping_man.start()
             time.sleep(TIME_BETWEEN_HANDSHAKE)
             self.handshaker.start()
-            self.vote_strategy.calc_new_master_and_add_message(
-                self.connected,
-                self.dispatched,
-                self.lost)
         except KeyboardInterrupt:
             pass
 
@@ -100,7 +98,7 @@ class NodeManger(Observer):
         elif event == CONNECTION_LOST:
             self.__handle_connection_lost(update_value)
         elif event == NEW_MASTER:
-            self.own_information.master = update_value.value
+            self.master = update_value.value[1]
         elif event == NO_MAJORITY_SHUTDOWN:
             self.dispatch()
 
@@ -108,7 +106,7 @@ class NodeManger(Observer):
         """
         React to lost connection by remove from connected if not dispatched and
         add to lost. If more lost than connect will init dispatching process.
-        Otherwise will init start of new master calculation
+        Otherwise will init start of new wish_master calculation
         :param new_value:
         :return:
         """
@@ -164,7 +162,7 @@ class NodeManger(Observer):
     def __handle_handshake_message(self, node_info):
         """
         Add Node to connected and remove old node form dispatched if
-        new node has same name. After this will initiate calc of new master.
+        new node has same name. After this will initiate calc of new wish_master.
         :param node_info: new node
         :return: None
         """
@@ -185,7 +183,7 @@ class NodeManger(Observer):
 
     def __handle_dispatch_msg(self, node_info):
         """
-        Remove node from lost or connected and add to dispatch. Will also initiate calculation of new master
+        Remove node from lost or connected and add to dispatch. Will also initiate calculation of new wish_master
         :param node_info: dispatching node
         :return: None
         """
@@ -219,7 +217,7 @@ class NodeManger(Observer):
     def __handle_entering_node(self, new_value):
         """
         Will add new node to connected, add handshake in message dict for new node and
-        initiate calculation of new master
+        initiate calculation of new wish_master
         :param new_value: update with node
         :return: None
         """

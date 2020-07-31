@@ -45,7 +45,7 @@ PARSER.add_argument('--use_port_instead_of_life_time',
                     action='store_true')
 PARSER.add_argument('-m', '--masterScript',
                     help='Python script that will be executed when node '
-                         'become master or keep master status',
+                         'become wish_master or keep wish_master status',
                     type=str,
                     default=None)
 PARSER.add_argument('-s', '--slaveScript',
@@ -114,7 +114,7 @@ if __name__ == '__main__':
         assert os.path.isfile(MASTER_SCRIPT)
 
     if MASTER_SCRIPT is not None or SLAVE_SCRIPT is not None:
-        STATUS_HANDLER = StatusHandler(OWN_INFO, SLAVE_SCRIPT, MASTER_SCRIPT)
+        STATUS_HANDLER = StatusHandler(OWN_INFO, NODE_MANGER, SLAVE_SCRIPT, MASTER_SCRIPT)
         NODE_MANGER.vote_strategy.attach(STATUS_HANDLER)
 
     NODE_MANGER.start()

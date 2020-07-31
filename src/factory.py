@@ -36,7 +36,7 @@ def create_node_manger_by_node_info(node_info: NodeInformation,
     Help method to create instance of NodeManger with observed instance of VoteStrategy and PingMan
     :param node_info: Info used for creation of instance
     :param broadcast_address: Broadcast Address for entering instances and making Handshake
-    :param vote_by_port: Flag decides if master is calculated by PORT or birthtime of node
+    :param vote_by_port: Flag decides if wish_master is calculated by PORT or birthtime of node
     :return: created NodeManger
     """
     message_dict = MessageDict(node_info)
@@ -54,6 +54,7 @@ def create_node_manger_by_node_info(node_info: NodeInformation,
     manager = NodeManger(message_dict=message_dict, own_information=node_info,
                          connected=connected_set, ping_man=ping_man, handshaker=handshake,
                          vote_strategy=vote_strategy)
+    vote_strategy.node_manager = manager
     handshake.attach(manager)
     ping_man.attach(manager)
 

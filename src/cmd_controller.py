@@ -33,7 +33,6 @@ class CmdController(Observer):
         :return: None
         """
         Thread(target=self.input_loop).start()
-        print('Start input loop')
 
     def input_loop(self):
         running = True
@@ -55,7 +54,7 @@ class CmdController(Observer):
 
             if event == VOTE_FOR:
                 voted_for = update_value.value
-                print('{} want {} as new master'.format(self.own_information.name, voted_for.name))
+                print('{} want {} as new wish_master'.format(self.own_information.name, voted_for.name))
             elif event == NEW_ENTERING_NODE:
                 node_info = update_value.value
                 if node_info != self.own_information:
@@ -65,8 +64,9 @@ class CmdController(Observer):
                 lost_node = update_value.value
                 print('{} lost connection from {}'.format(self.own_information.name, lost_node.name))
             elif event == NEW_MASTER:
-                new_master = update_value.value
-                print('{} set {} as new master'.format(self.own_information.name, new_master.name))
+                old_master, new_master = update_value.value
+                if old_master != new_master:
+                    print('{} set {} as new master'.format(self.own_information.name, new_master.name))
 
             elif event == NO_MAJORITY_SHUTDOWN:
                 print('{} dispatching their is not majority'.format(self.own_information.name))
@@ -84,8 +84,8 @@ class CmdController(Observer):
                         print('{} Dispatched from {}'.format(node_info.name, self.own_information.name))
                     elif subject == HANDSHAKE_MESSAGE:
                         if node_info != self.own_information:
-                            print('{} add {} to connected by broadcast. '
+                            print('{} add {} to connected by handshake. '
                                   'Now are {} nodes connected '.format(self.own_information.name,
                                                                        node_info.name,
-                                                                       len(self.node_manger.connected)))
+                                                                       len(self.node_manger.connected) + 1))
 

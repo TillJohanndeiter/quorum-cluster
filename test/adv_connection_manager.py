@@ -1,5 +1,5 @@
 """
-Contain class that cover network use cases especially changes of master use cases.
+Contain class that cover network use cases especially changes of wish_master use cases.
 """
 import time
 import unittest
@@ -15,8 +15,8 @@ class AdvancedNetworkCase(unittest.TestCase):
 
     def test_handshake_with_three_nodes(self):
         """
-        Set up two nodes. Check if both are connected and have same master. Then
-        will start third instance and will again check if connected and same master
+        Set up two nodes. Check if both are connected and have same wish_master. Then
+        will start third instance and will again check if connected and same wish_master
         :return: None
         """
         global alice, bob, peter
@@ -32,16 +32,16 @@ class AdvancedNetworkCase(unittest.TestCase):
             time.sleep(5)
             self.assertEqual(alice.connected, SynchronizedSet({bob_information}))
             self.assertEqual(bob.connected, SynchronizedSet({alice_information}))
-            self.assertEqual(alice.own_information.master, alice_information)
-            self.assertEqual(bob.own_information.master, alice_information)
+            self.assertEqual(alice.own_information.wish_master, alice_information)
+            self.assertEqual(bob.own_information.wish_master, alice_information)
             peter.start()
             time.sleep(8)
             self.assertEqual(alice.connected, SynchronizedSet({peter_information, bob_information}))
             self.assertEqual(bob.connected, SynchronizedSet({alice_information, peter_information}))
             self.assertEqual(peter.connected, SynchronizedSet({alice_information, bob_information}))
-            self.assertEqual(alice.own_information.master, alice_information)
-            self.assertEqual(bob.own_information.master, alice_information)
-            self.assertEqual(peter.own_information.master, alice_information)
+            self.assertEqual(alice.own_information.wish_master, alice_information)
+            self.assertEqual(bob.own_information.wish_master, alice_information)
+            self.assertEqual(peter.own_information.wish_master, alice_information)
         finally:
             alice.kill()
             bob.kill()
@@ -66,8 +66,8 @@ class AdvancedNetworkCase(unittest.TestCase):
             time.sleep(5)
             self.assertEqual(alice.connected, SynchronizedSet({bob_information}))
             self.assertEqual(bob.connected, SynchronizedSet({alice_information}))
-            self.assertEqual(alice.own_information.master, alice_information)
-            self.assertEqual(bob.own_information.master, alice_information)
+            self.assertEqual(alice.own_information.wish_master, alice_information)
+            self.assertEqual(bob.own_information.wish_master, alice_information)
             peter.start()
             time.sleep(8)
             self.assertEqual(alice.connected, SynchronizedSet({peter_information, bob_information}))
@@ -160,8 +160,8 @@ class AdvancedNetworkCase(unittest.TestCase):
 
     def test_changing_master_by_birthtime(self):
         """
-        Check if in a network of four nodes master is correctly determined and after
-        master is killed other nodes can determined a new master by using TimeStrategy
+        Check if in a network of four nodes wish_master is correctly determined and after
+        wish_master is killed other nodes can determined a new wish_master by using TimeStrategy
         :return: None
         """
         global alice, bob, peter, dieter
@@ -176,10 +176,10 @@ class AdvancedNetworkCase(unittest.TestCase):
             time.sleep(3)
             self.check_connection(alice, alice_information, bob, bob_information, dieter, dieter_information, peter,
                                   peter_information)
-            self.assertEqual(alice.own_information.master, alice_information)
-            self.assertEqual(bob.own_information.master, alice_information)
-            self.assertEqual(peter.own_information.master, alice_information)
-            self.assertEqual(dieter.own_information.master, alice_information)
+            self.assertEqual(alice.own_information.wish_master, alice_information)
+            self.assertEqual(bob.own_information.wish_master, alice_information)
+            self.assertEqual(peter.own_information.wish_master, alice_information)
+            self.assertEqual(dieter.own_information.wish_master, alice_information)
             alice.kill()
             time.sleep(8)
 
@@ -195,9 +195,9 @@ class AdvancedNetworkCase(unittest.TestCase):
             self.assertEqual(peter.dispatched, SynchronizedSet({}))
             self.assertEqual(dieter.dispatched, SynchronizedSet({}))
 
-            self.assertEqual(bob.own_information.master, dieter_information)
-            self.assertEqual(peter.own_information.master, dieter_information)
-            self.assertEqual(dieter.own_information.master, dieter_information)
+            self.assertEqual(bob.own_information.wish_master, dieter_information)
+            self.assertEqual(peter.own_information.wish_master, dieter_information)
+            self.assertEqual(dieter.own_information.wish_master, dieter_information)
 
         finally:
             alice.kill()
@@ -207,8 +207,8 @@ class AdvancedNetworkCase(unittest.TestCase):
 
     def test_changing_master_by_port(self):
         """
-            Check if in a network of four nodes master is correctly determined and after
-            master is killed other nodes can determined a new master by using PortStrategy
+            Check if in a network of four nodes wish_master is correctly determined and after
+            wish_master is killed other nodes can determined a new wish_master by using PortStrategy
             :return: None
         """
         global alice, bob, peter, dieter
@@ -223,10 +223,10 @@ class AdvancedNetworkCase(unittest.TestCase):
             time.sleep(3)
             self.check_connection(alice, alice_information, bob, bob_information, dieter, dieter_information, peter,
                                   peter_information)
-            self.assertEqual(alice.own_information.master, alice_information)
-            self.assertEqual(bob.own_information.master, alice_information)
-            self.assertEqual(peter.own_information.master, alice_information)
-            self.assertEqual(dieter.own_information.master, alice_information)
+            self.assertEqual(alice.own_information.wish_master, alice_information)
+            self.assertEqual(bob.own_information.wish_master, alice_information)
+            self.assertEqual(peter.own_information.wish_master, alice_information)
+            self.assertEqual(dieter.own_information.wish_master, alice_information)
             alice.kill()
             time.sleep(8)
 
@@ -242,9 +242,9 @@ class AdvancedNetworkCase(unittest.TestCase):
             self.assertEqual(peter.dispatched, SynchronizedSet({}))
             self.assertEqual(dieter.dispatched, SynchronizedSet({}))
 
-            self.assertEqual(bob.own_information.master, dieter_information)
-            self.assertEqual(peter.own_information.master, dieter_information)
-            self.assertEqual(dieter.own_information.master, dieter_information)
+            self.assertEqual(bob.own_information.wish_master, dieter_information)
+            self.assertEqual(peter.own_information.wish_master, dieter_information)
+            self.assertEqual(dieter.own_information.wish_master, dieter_information)
 
         finally:
             alice.kill()
@@ -293,7 +293,7 @@ class AdvancedNetworkCase(unittest.TestCase):
 
     def test_slave_is_killed_master_stay_same(self):
         """
-        Check if network still determine master correctly if a slave/non-master has
+        Check if network still determine wish_master correctly if a slave/non-wish_master has
         been killed.
         :return: None
         """
@@ -309,10 +309,10 @@ class AdvancedNetworkCase(unittest.TestCase):
             time.sleep(3)
             self.check_connection(alice, alice_information, bob, bob_information, dieter, dieter_information, peter,
                                   peter_information)
-            self.assertEqual(alice.own_information.master, alice_information)
-            self.assertEqual(bob.own_information.master, alice_information)
-            self.assertEqual(peter.own_information.master, alice_information)
-            self.assertEqual(dieter.own_information.master, alice_information)
+            self.assertEqual(alice.own_information.wish_master, alice_information)
+            self.assertEqual(bob.own_information.wish_master, alice_information)
+            self.assertEqual(peter.own_information.wish_master, alice_information)
+            self.assertEqual(dieter.own_information.wish_master, alice_information)
             bob.kill()
             time.sleep(8)
 
@@ -328,9 +328,9 @@ class AdvancedNetworkCase(unittest.TestCase):
             self.assertEqual(peter.dispatched, SynchronizedSet({}))
             self.assertEqual(dieter.dispatched, SynchronizedSet({}))
 
-            self.assertEqual(alice.own_information.master, alice_information)
-            self.assertEqual(peter.own_information.master, alice_information)
-            self.assertEqual(dieter.own_information.master, alice_information)
+            self.assertEqual(alice.own_information.wish_master, alice_information)
+            self.assertEqual(peter.own_information.wish_master, alice_information)
+            self.assertEqual(dieter.own_information.wish_master, alice_information)
 
         finally:
             alice.kill()
@@ -340,8 +340,8 @@ class AdvancedNetworkCase(unittest.TestCase):
 
     def test_changing_master_after_dispatching(self):
         """
-        Test correct determination of master in a network of four nodes after
-        master determined first dispatched.
+        Test correct determination of wish_master in a network of four nodes after
+        wish_master determined first dispatched.
         :return: None
         """
         global alice, bob, peter, dieter
@@ -356,10 +356,10 @@ class AdvancedNetworkCase(unittest.TestCase):
             time.sleep(3)
             self.check_connection(alice, alice_information, bob, bob_information, dieter, dieter_information, peter,
                                   peter_information)
-            self.assertEqual(alice.own_information.master, alice_information)
-            self.assertEqual(bob.own_information.master, alice_information)
-            self.assertEqual(peter.own_information.master, alice_information)
-            self.assertEqual(dieter.own_information.master, alice_information)
+            self.assertEqual(alice.own_information.wish_master, alice_information)
+            self.assertEqual(bob.own_information.wish_master, alice_information)
+            self.assertEqual(peter.own_information.wish_master, alice_information)
+            self.assertEqual(dieter.own_information.wish_master, alice_information)
             alice.dispatch()
             time.sleep(8)
 
@@ -375,9 +375,9 @@ class AdvancedNetworkCase(unittest.TestCase):
             self.assertEqual(peter.lost, SynchronizedSet({}))
             self.assertEqual(dieter.lost, SynchronizedSet({}))
 
-            self.assertEqual(bob.own_information.master, dieter_information)
-            self.assertEqual(peter.own_information.master, dieter_information)
-            self.assertEqual(dieter.own_information.master, dieter_information)
+            self.assertEqual(bob.own_information.wish_master, dieter_information)
+            self.assertEqual(peter.own_information.wish_master, dieter_information)
+            self.assertEqual(dieter.own_information.wish_master, dieter_information)
 
         finally:
             alice.kill()

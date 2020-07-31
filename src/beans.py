@@ -47,11 +47,11 @@ class NodeInformation:
     def __init__(self,
                  net_address: NetAddress,
                  birthtime=time.time(),
-                 name=None, master = None):
+                 name=None, wish_master = None):
         self.net_address = net_address
         self.birthtime = birthtime
         self.name = name
-        self.master = master
+        self.wish_master = wish_master
 
     def to_json(self) -> str:
         """
@@ -59,10 +59,10 @@ class NodeInformation:
         :return: tuple of host and PORT
         """
         copsy = copy.deepcopy(self)
-        master_copy = copy.deepcopy(self.master)
-        if copsy.master is not None:
-            master_copy.master = None
-        copsy.master = master_copy
+        master_copy = copy.deepcopy(self.wish_master)
+        if copsy.wish_master is not None:
+            master_copy.wish_master = None
+        copsy.wish_master = master_copy
         return json.dumps(copsy, default=lambda o: o.__dict__,
                           sort_keys=True,  indent=4)
 
@@ -90,9 +90,9 @@ def node_information_from_json(json_string) -> NodeInformation:
     net_address = NetAddress(**node_info_dict['net_address'])
     node_info_obj = NodeInformation(**node_info_dict)
     node_info_obj.net_address = net_address
-    if (node_info_dict['master']) is not None:
-        node_info_obj.master = NodeInformation(**node_info_dict['master'])
-        node_info_obj.master.net_address = NetAddress(**node_info_dict['master']['net_address'])
+    if (node_info_dict['wish_master']) is not None:
+        node_info_obj.wish_master = NodeInformation(**node_info_dict['wish_master'])
+        node_info_obj.wish_master.net_address = NetAddress(**node_info_dict['wish_master']['net_address'])
     return node_info_obj
 
 
