@@ -59,7 +59,7 @@ class CmdController(Observer):
                 node_info = update_value.value
                 if node_info != self.own_information:
                     print('{} add {} to connected by broadcast. Now are {} nodes connected '.format(
-                        self.own_information.name, node_info.name, len(self.node_manger.connected)))
+                        self.own_information.name, node_info.name, len(self.node_manger.connected) + 1))
             elif event == CONNECTION_LOST:
                 lost_node = update_value.value
                 print('{} lost connection from {}'.format(self.own_information.name, lost_node.name))

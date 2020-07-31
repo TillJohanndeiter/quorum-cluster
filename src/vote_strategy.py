@@ -29,8 +29,8 @@ class VoteStrategy(Observable):
         self.voting_dict = dict()
         self.lock = Lock()
 
-    def calc_new_master_and_add_message(self, connected: SynchronizedSet, lost: SynchronizedSet,
-                                        dispatched: SynchronizedSet):
+    def calc_new_master(self, connected: SynchronizedSet, lost: SynchronizedSet,
+                        dispatched: SynchronizedSet):
         """
         :param connected: set of currently connected nodes
         :param lost: set of currently lost node
@@ -56,10 +56,10 @@ class VoteStrategy(Observable):
         :param dispatched: Set of Nodes which are dispatched
         :return: None
         """
-        his_master = send_information.wish_master
+        his_wish_master = send_information.wish_master
 
         self.lock.acquire()
-        self.voting_dict[send_information] = his_master
+        self.voting_dict[send_information] = his_wish_master
         self.lock.release()
         self.__eval_votes_and_make_new_master(connected, dispatched, lost)
 

@@ -86,7 +86,7 @@ class StandardNetworkCase(unittest.TestCase):
 
     def start_and_check_master_and_connection(self, alice_information, bob_information):
         """
-        Help method. Init two nodes and checks if both are connected and determine same wish_master.
+        Help method. Init two nodes and checks if both are connected and determine same master.
         :param alice_information: info for first node
         :param bob_information: info for second node
         :return: None
@@ -101,8 +101,8 @@ class StandardNetworkCase(unittest.TestCase):
         self.assertEqual(alice.connected, SynchronizedSet({bob_information}))
         self.assertEqual(bob.connected, SynchronizedSet({alice_information}))
         time.sleep(8)
-        self.assertEqual(alice.own_information.wish_master, alice_information)
-        self.assertEqual(bob.own_information.wish_master, alice_information)
+        self.assertEqual(alice.master, alice_information)
+        self.assertEqual(bob.master, alice_information)
 
 
 def set_up_peter_bob_alice(alice_information, bob_information, peter_information, by_port=False):

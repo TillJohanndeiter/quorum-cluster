@@ -47,7 +47,7 @@ class NodeManger(Observer):
         wish_master.
         :return: None
         """
-        self.vote_strategy.calc_new_master_and_add_message(self.connected, self.dispatched, self.lost)
+        self.vote_strategy.calc_new_master(self.connected, self.dispatched, self.lost)
         try:
             self.running = True
             time.sleep(TIME_BETWEEN_HANDSHAKE)
@@ -122,9 +122,9 @@ class NodeManger(Observer):
             if self.running:
                 self.dispatch()
         else:
-            self.vote_strategy.calc_new_master_and_add_message(self.connected,
-                                                               self.dispatched,
-                                                               self.lost)
+            self.vote_strategy.calc_new_master(self.connected,
+                                               self.dispatched,
+                                               self.lost)
 
     def __handle_messages(self, new_value):
         """
@@ -177,9 +177,9 @@ class NodeManger(Observer):
             self.dispatched.remove(node_info)
         if node_info in self.lost:
             self.lost.remove(node_info)
-        self.vote_strategy.calc_new_master_and_add_message(self.connected,
-                                                           self.dispatched,
-                                                           self.lost)
+        self.vote_strategy.calc_new_master(self.connected,
+                                           self.dispatched,
+                                           self.lost)
 
     def __handle_dispatch_msg(self, node_info):
         """
@@ -199,9 +199,9 @@ class NodeManger(Observer):
             if self.running:
                 self.dispatch()
         else:
-            self.vote_strategy.calc_new_master_and_add_message(self.connected,
-                                                               self.dispatched,
-                                                               self.lost)
+            self.vote_strategy.calc_new_master(self.connected,
+                                               self.dispatched,
+                                               self.lost)
 
     def __remove_node_from_dispatch_if_same_name(self, node_info):
         """
@@ -226,6 +226,6 @@ class NodeManger(Observer):
             self.message_dict.add_handshake_message(own=self.own_information, target=node_info)
             self.__remove_node_from_dispatch_if_same_name(node_info)
             self.connected.add(node_info)
-            self.vote_strategy.calc_new_master_and_add_message(self.connected,
-                                                               self.dispatched,
-                                                               self.lost)
+            self.vote_strategy.calc_new_master(self.connected,
+                                               self.dispatched,
+                                               self.lost)

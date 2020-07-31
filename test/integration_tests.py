@@ -32,16 +32,16 @@ class AdvancedNetworkCase(unittest.TestCase):
             time.sleep(5)
             self.assertEqual(alice.connected, SynchronizedSet({bob_information}))
             self.assertEqual(bob.connected, SynchronizedSet({alice_information}))
-            self.assertEqual(alice.own_information.wish_master, alice_information)
-            self.assertEqual(bob.own_information.wish_master, alice_information)
+            self.assertEqual(alice.master, alice_information)
+            self.assertEqual(bob.master, alice_information)
             peter.start()
             time.sleep(8)
             self.assertEqual(alice.connected, SynchronizedSet({peter_information, bob_information}))
             self.assertEqual(bob.connected, SynchronizedSet({alice_information, peter_information}))
             self.assertEqual(peter.connected, SynchronizedSet({alice_information, bob_information}))
-            self.assertEqual(alice.own_information.wish_master, alice_information)
-            self.assertEqual(bob.own_information.wish_master, alice_information)
-            self.assertEqual(peter.own_information.wish_master, alice_information)
+            self.assertEqual(alice.master, alice_information)
+            self.assertEqual(bob.master, alice_information)
+            self.assertEqual(peter.master, alice_information)
         finally:
             alice.kill()
             bob.kill()
@@ -66,8 +66,8 @@ class AdvancedNetworkCase(unittest.TestCase):
             time.sleep(5)
             self.assertEqual(alice.connected, SynchronizedSet({bob_information}))
             self.assertEqual(bob.connected, SynchronizedSet({alice_information}))
-            self.assertEqual(alice.own_information.wish_master, alice_information)
-            self.assertEqual(bob.own_information.wish_master, alice_information)
+            self.assertEqual(alice.master, alice_information)
+            self.assertEqual(bob.master, alice_information)
             peter.start()
             time.sleep(8)
             self.assertEqual(alice.connected, SynchronizedSet({peter_information, bob_information}))
@@ -176,10 +176,10 @@ class AdvancedNetworkCase(unittest.TestCase):
             time.sleep(3)
             self.check_connection(alice, alice_information, bob, bob_information, dieter, dieter_information, peter,
                                   peter_information)
-            self.assertEqual(alice.own_information.wish_master, alice_information)
-            self.assertEqual(bob.own_information.wish_master, alice_information)
-            self.assertEqual(peter.own_information.wish_master, alice_information)
-            self.assertEqual(dieter.own_information.wish_master, alice_information)
+            self.assertEqual(alice.master, alice_information)
+            self.assertEqual(bob.master, alice_information)
+            self.assertEqual(peter.master, alice_information)
+            self.assertEqual(dieter.master, alice_information)
             alice.kill()
             time.sleep(8)
 
@@ -195,9 +195,9 @@ class AdvancedNetworkCase(unittest.TestCase):
             self.assertEqual(peter.dispatched, SynchronizedSet({}))
             self.assertEqual(dieter.dispatched, SynchronizedSet({}))
 
-            self.assertEqual(bob.own_information.wish_master, dieter_information)
-            self.assertEqual(peter.own_information.wish_master, dieter_information)
-            self.assertEqual(dieter.own_information.wish_master, dieter_information)
+            self.assertEqual(bob.master, dieter_information)
+            self.assertEqual(peter.master, dieter_information)
+            self.assertEqual(dieter.master, dieter_information)
 
         finally:
             alice.kill()
@@ -223,10 +223,10 @@ class AdvancedNetworkCase(unittest.TestCase):
             time.sleep(3)
             self.check_connection(alice, alice_information, bob, bob_information, dieter, dieter_information, peter,
                                   peter_information)
-            self.assertEqual(alice.own_information.wish_master, alice_information)
-            self.assertEqual(bob.own_information.wish_master, alice_information)
-            self.assertEqual(peter.own_information.wish_master, alice_information)
-            self.assertEqual(dieter.own_information.wish_master, alice_information)
+            self.assertEqual(alice.master, alice_information)
+            self.assertEqual(bob.master, alice_information)
+            self.assertEqual(peter.master, alice_information)
+            self.assertEqual(dieter.master, alice_information)
             alice.kill()
             time.sleep(8)
 
@@ -242,9 +242,9 @@ class AdvancedNetworkCase(unittest.TestCase):
             self.assertEqual(peter.dispatched, SynchronizedSet({}))
             self.assertEqual(dieter.dispatched, SynchronizedSet({}))
 
-            self.assertEqual(bob.own_information.wish_master, dieter_information)
-            self.assertEqual(peter.own_information.wish_master, dieter_information)
-            self.assertEqual(dieter.own_information.wish_master, dieter_information)
+            self.assertEqual(bob.master, dieter_information)
+            self.assertEqual(peter.master, dieter_information)
+            self.assertEqual(dieter.master, dieter_information)
 
         finally:
             alice.kill()
@@ -309,10 +309,10 @@ class AdvancedNetworkCase(unittest.TestCase):
             time.sleep(3)
             self.check_connection(alice, alice_information, bob, bob_information, dieter, dieter_information, peter,
                                   peter_information)
-            self.assertEqual(alice.own_information.wish_master, alice_information)
-            self.assertEqual(bob.own_information.wish_master, alice_information)
-            self.assertEqual(peter.own_information.wish_master, alice_information)
-            self.assertEqual(dieter.own_information.wish_master, alice_information)
+            self.assertEqual(alice.master, alice_information)
+            self.assertEqual(bob.master, alice_information)
+            self.assertEqual(peter.master, alice_information)
+            self.assertEqual(dieter.master, alice_information)
             bob.kill()
             time.sleep(8)
 
@@ -328,9 +328,9 @@ class AdvancedNetworkCase(unittest.TestCase):
             self.assertEqual(peter.dispatched, SynchronizedSet({}))
             self.assertEqual(dieter.dispatched, SynchronizedSet({}))
 
-            self.assertEqual(alice.own_information.wish_master, alice_information)
-            self.assertEqual(peter.own_information.wish_master, alice_information)
-            self.assertEqual(dieter.own_information.wish_master, alice_information)
+            self.assertEqual(alice.master, alice_information)
+            self.assertEqual(peter.master, alice_information)
+            self.assertEqual(dieter.master, alice_information)
 
         finally:
             alice.kill()
@@ -356,10 +356,10 @@ class AdvancedNetworkCase(unittest.TestCase):
             time.sleep(3)
             self.check_connection(alice, alice_information, bob, bob_information, dieter, dieter_information, peter,
                                   peter_information)
-            self.assertEqual(alice.own_information.wish_master, alice_information)
-            self.assertEqual(bob.own_information.wish_master, alice_information)
-            self.assertEqual(peter.own_information.wish_master, alice_information)
-            self.assertEqual(dieter.own_information.wish_master, alice_information)
+            self.assertEqual(alice.master, alice_information)
+            self.assertEqual(bob.master, alice_information)
+            self.assertEqual(peter.master, alice_information)
+            self.assertEqual(dieter.master, alice_information)
             alice.dispatch()
             time.sleep(8)
 
@@ -375,9 +375,9 @@ class AdvancedNetworkCase(unittest.TestCase):
             self.assertEqual(peter.lost, SynchronizedSet({}))
             self.assertEqual(dieter.lost, SynchronizedSet({}))
 
-            self.assertEqual(bob.own_information.wish_master, dieter_information)
-            self.assertEqual(peter.own_information.wish_master, dieter_information)
-            self.assertEqual(dieter.own_information.wish_master, dieter_information)
+            self.assertEqual(bob.master, dieter_information)
+            self.assertEqual(peter.master, dieter_information)
+            self.assertEqual(dieter.master, dieter_information)
 
         finally:
             alice.kill()

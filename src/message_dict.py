@@ -37,12 +37,12 @@ class MessageDict:
         """
         if node_information in self.dict.keys():
             if self.dict[node_information].empty():
-                return DEFAULT_MESSAGE + JSON_SEPARATOR + self.own_info.wish_master.to_json()
+                return DEFAULT_MESSAGE + JSON_SEPARATOR + self.own_info.to_json()
             copy = list(self.dict[node_information].queue)
             with self.dict[node_information].mutex:
                 self.dict[node_information].queue.clear()
             return MESSAGE_SEPARATOR.join(copy)
-        return DEFAULT_MESSAGE + JSON_SEPARATOR + self.own_info.wish_master.to_json()
+        return DEFAULT_MESSAGE + JSON_SEPARATOR + self.own_info.to_json()
 
     def add_message_for_node(self, message: str, target: NodeInformation):
         """
