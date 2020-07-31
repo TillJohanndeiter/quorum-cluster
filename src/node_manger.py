@@ -36,7 +36,6 @@ class NodeManger(Observer):
         self.dispatched = SynchronizedSet(set())
         self.lost = SynchronizedSet(set())
         self.vote_strategy = vote_strategy
-        self.vote_strategy.attach(self)
         self.master = None
         self.running = False
 
@@ -98,7 +97,8 @@ class NodeManger(Observer):
         elif event == CONNECTION_LOST:
             self.__handle_connection_lost(update_value)
         elif event == NEW_MASTER:
-            self.master = update_value.value[1]
+            old_master, new_master = update_value.value
+            self.master = new_master
         elif event == NO_MAJORITY_SHUTDOWN:
             self.dispatch()
 

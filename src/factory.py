@@ -55,6 +55,7 @@ def create_node_manger_by_node_info(node_info: NodeInformation,
                          connected=connected_set, ping_man=ping_man, handshaker=handshake,
                          vote_strategy=vote_strategy)
     vote_strategy.node_manager = manager
+    vote_strategy.attach(manager)
     handshake.attach(manager)
     ping_man.attach(manager)
 

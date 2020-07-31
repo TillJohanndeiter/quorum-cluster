@@ -13,9 +13,6 @@ from src.pinger import CONNECTION_LOST, INCOMING_MESSAGE
 from src.message_dict import DEFAULT_MESSAGE, DISPATCH_MESSAGE, \
     JSON_SEPARATOR, HANDSHAKE_MESSAGE, MESSAGE_SEPARATOR
 
-
-# TODO: Implement dispatching by enter :q
-
 class CmdController(Observer):
     """
     Class which prints debug information and can handle user input.
