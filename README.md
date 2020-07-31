@@ -96,7 +96,7 @@ calculated by absolute majoritiy. If their is no absolute the largest part
 will surivive. Others will dispatch. If more nodes lost than connect the node 
 will dispatch, becausethe network cannot build a majority any longer. 
 
-    calc_most_voted_note
+    select_self_as_master
     
     if network changes (Master or Slave dispatching, killed or enter network):  
 
@@ -105,7 +105,7 @@ will dispatch, becausethe network cannot build a majority any longer.
         if TimeStrategy:  
             select connected node furthest back initialisation time  
 
-        send_information_to_node_when_ping  
+        send_vote_to_other_node_on_ping  
  
         for every incoming_ping:
         
