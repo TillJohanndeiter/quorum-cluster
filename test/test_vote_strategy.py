@@ -16,7 +16,7 @@ class VoteStrategyCase(unittest.TestCase):
 
     def test_port_strategy(self):
         """
-        Check if strategy calculate node alice with lowest port correctly as new master.
+        Check if strategy calculate node alice with lowest port correctly as new wish_master.
         :return: None
         """
         port_strategy = PortStrategy(None, None)
@@ -25,7 +25,7 @@ class VoteStrategyCase(unittest.TestCase):
 
     def test_time_strategy(self):
         """
-        Check if strategy calculate node bob with lowest birthtime correctly as new master.
+        Check if strategy calculate node bob with lowest birthtime correctly as new wish_master.
         :return:
         """
         port_strategy = TimeStrategy(None, None)

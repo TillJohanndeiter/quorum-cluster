@@ -20,14 +20,14 @@ class StandardNetworkCase(unittest.TestCase):
         alice = create_node_manger_by_node_info(alice_information)
         alice.start()
         time.sleep(2)
-        self.assertEqual(alice.own_information.master, alice_information)
+        self.assertEqual(alice.own_information.wish_master, alice_information)
         alice.dispatch()
         alice.kill()
 
     def test_simple_handshake(self):
         """
         Test if two nodes can start, make handshake, add each other to connected and
-        determine same master
+        determine same wish_master
         :return: None
         """
         global alice, bob, peter
@@ -86,14 +86,14 @@ class StandardNetworkCase(unittest.TestCase):
 
     def start_and_check_master_and_connection(self, alice_information, bob_information):
         """
-        Help method. Init two nodes and checks if both are connected and determine same master.
+        Help method. Init two nodes and checks if both are connected and determine same wish_master.
         :param alice_information: info for first node
         :param bob_information: info for second node
         :return: None
         """
         global alice, bob
-        alice = create_node_manger_by_node_info(alice_information)
-        bob = create_node_manger_by_node_info(bob_information)
+        alice = create_node_manger_by_node_info(alice_information, debug=True)
+        bob = create_node_manger_by_node_info(bob_information, debug=True)
         alice.start()
         time.sleep(3)
         bob.start()
@@ -101,13 +101,13 @@ class StandardNetworkCase(unittest.TestCase):
         self.assertEqual(alice.connected, SynchronizedSet({bob_information}))
         self.assertEqual(bob.connected, SynchronizedSet({alice_information}))
         time.sleep(8)
-        self.assertEqual(alice.own_information.master, alice_information)
-        self.assertEqual(bob.own_information.master, alice_information)
+        self.assertEqual(alice.own_information.wish_master, alice_information)
+        self.assertEqual(bob.own_information.wish_master, alice_information)
 
 
 def set_up_peter_bob_alice(alice_information, bob_information, peter_information, by_port=False):
     """
-    Help method. Init three nodes and checks if are connected and determine same master.
+    Help method. Init three nodes and checks if are connected and determine same wish_master.
     :param alice_information: info for first node
     :param bob_information: info for second node
     :param peter_information: info for third node

@@ -1,8 +1,7 @@
 """
 Provides abstract template Strategy and two implementations for
-handling incoming votes and calculate new master.
+handling incoming votes and calculate new wish_master.
 """
-import time
 from collections import Counter
 from synchronized_set import SynchronizedSet
 from threading import Lock
@@ -18,7 +17,7 @@ SECONDS_WAIT_FOR_VOTES = 5
 
 class VoteStrategy(Observable):
     """
-    Abstract class which provides the template for calculate new master
+    Abstract class which provides the template for calculate new wish_master
     and notify observer (NodeManger)
     """
 
@@ -26,9 +25,9 @@ class VoteStrategy(Observable):
         super().__init__()
         self.own_information = own_information
         self.message_dict = message_dict
+        self.node_manager = None
         self.voting_dict = dict()
         self.lock = Lock()
-        self.wait_for_votes = False
 
     def calc_new_master_and_add_message(self, connected: SynchronizedSet, lost: SynchronizedSet,
                                         dispatched: SynchronizedSet):
@@ -42,14 +41,14 @@ class VoteStrategy(Observable):
         voted_for = self.get_best_node(all_nodes)
         self.lock.acquire()
         self.voting_dict[self.own_information] = voted_for
-        self.own_information.master = voted_for
+        self.own_information.wish_master = voted_for
         self.lock.release()
         self.__eval_votes_and_make_new_master(connected, dispatched, lost)
 
     def vote_for(self, send_information, connected: SynchronizedSet, lost: SynchronizedSet,
                  dispatched: SynchronizedSet):
         """
-        Handle incoming vote by adding vote to voting dict and calculate master.
+        Handle incoming vote by adding vote to voting dict and calculate wish_master.
         :param send_information: Node who send vote
         :param voted_node: Node which was voted
         :param connected: Set of Nodes which are connected
@@ -57,7 +56,7 @@ class VoteStrategy(Observable):
         :param dispatched: Set of Nodes which are dispatched
         :return: None
         """
-        his_master = send_information.master
+        his_master = send_information.wish_master
 
         self.lock.acquire()
         self.voting_dict[send_information] = his_master
@@ -98,13 +97,12 @@ class VoteStrategy(Observable):
                 if self.voting_dict[self.own_information] != most_voted:
                     self.notify(UpdateValue(NO_MAJORITY_SHUTDOWN))
                 else:
-                    self.update_if_master_changed(most_voted)
+                    self.notify_vote(most_voted)
             else:
-                self.update_if_master_changed(most_voted)
+                self.notify_vote(most_voted)
 
-    def update_if_master_changed(self, most_voted):
-        if most_voted != self.own_information.master:
-            self.notify(UpdateValue(NEW_MASTER, most_voted))
+    def notify_vote(self, most_voted):
+        self.notify(UpdateValue(NEW_MASTER, (self.node_manager.master, most_voted)))
 
 
 class PortStrategy(VoteStrategy):
@@ -114,7 +112,7 @@ class PortStrategy(VoteStrategy):
 
     def get_best_node(self, nodes: [NodeInformation]) -> NodeInformation:
         """
-        Select new master by lowest number of PORT
+        Select new wish_master by lowest number of PORT
         :param nodes: all nodes in network
         :return: None
         """
@@ -128,7 +126,7 @@ class TimeStrategy(VoteStrategy):
 
     def get_best_node(self, nodes: [NodeInformation]) -> NodeInformation:
         """
-        Select new master by earliest time of initialisation
+        Select new wish_master by earliest time of initialisation
         :param nodes: all nodes in network
         :return: None
         """

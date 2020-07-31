@@ -20,7 +20,7 @@ class BeanCase(unittest.TestCase):
 
 
         node = NodeInformation(NetAddress(host='1.1.1.1', port=7542), time.time(), name='Till')
-        node.master = node
+        node.wish_master = node
         json_string = NodeInformation.to_json(node)
         deserialized_node = beans.node_information_from_json(json_string)
         self.assertEqual(node.name, deserialized_node.name)
@@ -28,7 +28,7 @@ class BeanCase(unittest.TestCase):
         self.assertEqual(node.net_address, deserialized_node.net_address)
         self.assertEqual(node.net_address.host, deserialized_node.net_address.host)
         self.assertEqual(node.net_address.port, deserialized_node.net_address.port)
-        self.assertEqual(node.master, deserialized_node)
+        self.assertEqual(node.wish_master, deserialized_node)
 
 
 if __name__ == '__main__':
