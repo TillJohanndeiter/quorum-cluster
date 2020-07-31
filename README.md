@@ -17,7 +17,7 @@ To clone the repository use command:
 
 `git clone https://gitlab.ub.uni-bielefeld.de/till.johanndeiter/quorumCluster.git`
 
-(Optional) you could use a virtual enviroment to avoid dependecy problems. 
+(Optional) you could use a virtual enviroment to avoid dependecy problems.  
 For this you have to create one and activate it:
 
 `python3 -m venv env`
