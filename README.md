@@ -86,7 +86,7 @@ Example command:
 
 **Quorum algorithm**
 
-Each node calculate based on time or port metric his wanted master 
+Each node calculate based on time or port metric his wanted master  
 and send constantly information about his vote to other nodes. 
 If a node detect changes (New Node or Lost/Dispatching Slave/Master)  
 it will change his voted master and change his transmitted information per  
@@ -95,10 +95,10 @@ nodes and evaluate most voted master.
 
 So you can imagine the network as a constant election.
 
-Base on own and recieving votes the new master is constaly 
-calculated by absolute majoritiy. If their is no absolute the largest part 
-will surivive. Others will dispatch. If more nodes lost than connect the node 
-will dispatch, because the network cannot build a majority any longer. 
+Base on own and recieving votes the new master is constaly  
+calculated by absolute majoritiy. If their is no absolute the largest part  
+will surivive. Others will dispatch. If more nodes lost than connect the node  
+will dispatch, because the network cannot build a majority any longer.  
 
     select_self_as_master
     
