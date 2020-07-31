@@ -95,9 +95,9 @@ nodes and evaluate most voted master.
 
 So you can imagine the network as a constant election.
 
-Base on own and recieving votes the new master is constaly  
+Base on own and recieving votes the new master is constantly  
 calculated by absolute majoritiy. If their is no absolute the largest part  
-will surivive. Others will dispatch. If more nodes lost than connect the node  
+will surivive. Others will dispatch. If more nodes lost than connected the node  
 will dispatch, because the network cannot build a majority any longer.  
 
     select_self_as_master
@@ -131,7 +131,7 @@ will dispatch, because the network cannot build a majority any longer.
 
 In test/ are unittest classes and integration_tests.py which contains  
 bigger integrations test especially for determination of a master in different  
-scenarios.
+scenarios. More information about each case are in documentation.
 
 ```
 pytest -v test/
