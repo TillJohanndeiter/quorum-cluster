@@ -57,11 +57,11 @@ def create_node_manger_by_node_info(node_info: NodeInformation,
     handshake.attach(manager)
     ping_man.attach(manager)
 
-    if debug:
-        CMD_CONTROLLER = CmdController(manager)
-        manager.vote_strategy.attach(CMD_CONTROLLER)
-        manager.ping_man.attach(CMD_CONTROLLER)
-        manager.handshaker.attach(CMD_CONTROLLER)
-        CMD_CONTROLLER.start_input_loop()
+
+    CMD_CONTROLLER = CmdController(manager, debug)
+    manager.vote_strategy.attach(CMD_CONTROLLER)
+    manager.ping_man.attach(CMD_CONTROLLER)
+    manager.handshaker.attach(CMD_CONTROLLER)
+    CMD_CONTROLLER.start_input_loop()
 
     return manager
