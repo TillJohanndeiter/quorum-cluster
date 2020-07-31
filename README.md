@@ -1,4 +1,4 @@
-# QuorumCluster
+# QuorumNetwork
 
 **Network programming project SS20**
 
