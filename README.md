@@ -69,15 +69,15 @@ Doof set Dick as new master
 
 For better readability of logs you can give the node a nickname by set  
 `-n=Your_Node_Name`  
-This name will also be used for reentering in current Network if a node  
-dispatched and reentering later.
+This name will also be used for reentering if a node dispatched and come back 
+later.
 
 If you want to dispatch your node enter 'q` in the command line. If you exit  
 by STRG + C then the node will be killed and marked as lost from existing Nodes
 
 Example command:
 
-`python node.py 0.0.0.0 6170 -d -m=i_am_master.py -s=i_am_slave.py -n=Till -d`
+`python node.py 0.0.0.0 6170 -d -m=i_am_master.py -s=i_am_slave.py -n=Dick -d`
 
 
 **Quorum algorithm**
@@ -85,7 +85,7 @@ Example command:
 Each node calculate based on time or port metric his wanted master 
 and send constantly information about his vote to other nodes. 
 If a node detect changes (New Node or Lost/Dispatching Slave/Master)
-it will change his voted master and change his send information per TCP socker. 
+it will change his voted master and change his send information per TCP socket. 
 Also each Node constantly listen to incoming messages from other nodes and 
 evaluate most voted master.
 
@@ -94,18 +94,18 @@ So you can imagine the network as a constant election.
 Base on own and recieving votes the new master is constaly 
 calculated by absolute majoritiy. If their is no absolute the largest part 
 will surivive. Others will dispatch. If more nodes lost than connect the node 
-will dispatch, becausethe network cannot build a majority any longer. 
+will dispatch, because the network cannot build a majority any longer. 
 
-    calc_most_voted_note
+    select_self_as_master
     
     if network changes (Master or Slave dispatching, killed or enter network):  
 
         if PortStrategy:  
-            select connected node with lowest port  
+            vote = connected node with lowest port  
         if TimeStrategy:  
-            select connected node furthest back initialisation time  
+            vote = connected node furthest back initialisation time  
 
-        send_information_to_node_when_ping  
+        send_vote_to_other_node_on_ping  
  
         for every incoming_ping:
         
