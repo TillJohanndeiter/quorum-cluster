@@ -1,6 +1,6 @@
 """
 Provides abstract template Strategy and two implementations for
-handling incoming votes and calculate new wish_master.
+handling incoming votes and calculate new master.
 """
 from collections import Counter
 from synchronized_set import SynchronizedSet
@@ -17,8 +17,9 @@ SECONDS_WAIT_FOR_VOTES = 5
 
 class VoteStrategy(Observable):
     """
-    Abstract class which provides the template for calculate new wish_master
-    and notify observer (NodeManger)
+    Abstract class which provides the template for calculate wish
+    master and new master based on votes from all Nodes of Network.
+    Also notify observer (NodeManger) about changes
     """
 
     def __init__(self, own_information: NodeInformation, message_dict: MessageDict):
@@ -51,7 +52,7 @@ class VoteStrategy(Observable):
     def vote_for(self, send_information, connected: SynchronizedSet, lost: SynchronizedSet,
                  dispatched: SynchronizedSet):
         """
-        Handle incoming vote by adding vote to voting dict and calculate wish_master
+        Handle incoming vote by adding vote to voting dict and calculate master
         and add own wish to dict.
         :param send_information: Node who send vote
         :param voted_node: Node which was voted

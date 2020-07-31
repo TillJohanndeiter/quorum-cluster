@@ -51,7 +51,7 @@ class CmdController(Observer):
 
             if event == VOTE_FOR:
                 voted_for = update_value.value
-                print('{} want {} as new wish_master'.format(self.own_information.name, voted_for.name))
+                print('{} want {} as new master'.format(self.own_information.name, voted_for.name))
             elif event == NEW_ENTERING_NODE:
                 node_info = update_value.value
                 if node_info != self.own_information:

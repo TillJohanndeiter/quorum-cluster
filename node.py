@@ -45,7 +45,7 @@ PARSER.add_argument('--use_port_instead_of_life_time',
                     action='store_true')
 PARSER.add_argument('-m', '--masterScript',
                     help='Python script that will be executed when node '
-                         'become wish_master or keep wish_master status',
+                         'become master or keep master status',
                     type=str,
                     default=None)
 PARSER.add_argument('-s', '--slaveScript',

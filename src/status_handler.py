@@ -10,7 +10,7 @@ from src.node_manger import NodeManger
 class StatusHandler(Observer):
     """
     Observer that will make an terminal call to start python scripts if node
-    changes wish_master or slave status.
+    changes master or slave status.
     """
 
     def __init__(self, own_information, node_manger: NodeManger, slave_script=None, master_script=None):

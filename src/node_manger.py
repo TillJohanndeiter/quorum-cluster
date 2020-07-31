@@ -42,7 +42,7 @@ class NodeManger(Observer):
     def start(self):
 
         """
-        Will calculate init wish_master. Start instance of PingMan and Handshake.
+        Will calculate init master. Start instance of PingMan and Handshake.
         After that will start pingman and handshaker
         :return: None
         """
@@ -106,7 +106,7 @@ class NodeManger(Observer):
         """
         React to lost connection by remove from connected if not dispatched and
         add to lost. If more lost than connect will init dispatching process.
-        Otherwise will init start of new wish_master calculation
+        Otherwise will init start of new master calculation
         :param new_value:
         :return:
         """
@@ -162,7 +162,7 @@ class NodeManger(Observer):
     def __handle_handshake_message(self, node_info):
         """
         Add Node to connected and remove old node form dispatched if
-        new node has same name. After this will initiate calc of new wish_master.
+        new node has same name. After this will initiate calc of new master.
         :param node_info: new node
         :return: None
         """
@@ -183,7 +183,7 @@ class NodeManger(Observer):
 
     def __handle_dispatch_msg(self, node_info):
         """
-        Remove node from lost or connected and add to dispatch. Will also initiate calculation of new wish_master
+        Remove node from lost or connected and add to dispatch. Will also initiate calculation of new master
         :param node_info: dispatching node
         :return: None
         """
@@ -217,7 +217,7 @@ class NodeManger(Observer):
     def __handle_entering_node(self, new_value):
         """
         Will add new node to connected, add handshake in message dict for new node and
-        initiate calculation of new wish_master
+        initiate calculation of new master
         :param new_value: update with node
         :return: None
         """
