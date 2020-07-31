@@ -36,7 +36,7 @@ class NetAddress:
         return self.host == o.host and self.port == o.port
 
     def __hash__(self) -> int:
-        return hash(self.host) + hash(self.port)
+        return hash((self.host, self.port))
 
 
 class NodeInformation:
@@ -68,7 +68,7 @@ class NodeInformation:
                and self.name == o.name
 
     def __hash__(self) -> int:
-        return hash(self.net_address) + hash(self.birthtime) + hash(self.name)
+        return hash((self.net_address, self.birthtime, self.name))
 
 
 def node_information_from_json(json_string) -> NodeInformation:
