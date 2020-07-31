@@ -94,11 +94,13 @@ if __name__ == '__main__':
     if ARGS.use_port_instead_of_life_time is False:
         NODE_MANGER = create_node_manger_by_node_info(node_info=OWN_INFO,
                                                       broadcast_address=BROAD_INFO,
-                                                      vote_by_port=False, debug=DEBUG)
+                                                      vote_by_port=False, debug=DEBUG,
+                                                      human_user=True)
     else:
         NODE_MANGER = create_node_manger_by_node_info(node_info=OWN_INFO,
                                                       broadcast_address=BROAD_INFO,
-                                                      vote_by_port=True, debug=DEBUG)
+                                                      vote_by_port=True, debug=DEBUG,
+                                                      human_user=True)
 
     SLAVE_SCRIPT = ARGS.slaveScript
 

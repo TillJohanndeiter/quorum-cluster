@@ -31,7 +31,7 @@ def create_node_manger(address: str, port: int, name=None) -> NodeManger:
 
 def create_node_manger_by_node_info(node_info: NodeInformation,
                                     broadcast_address=DEFAULT_BROADCAST,
-                                    vote_by_port=False, debug=False) -> NodeManger:
+                                    vote_by_port=False, debug=False, human_user=False) -> NodeManger:
     """
     Help method to create instance of NodeManger with observed instance of VoteStrategy and PingMan
     :param node_info: Info used for creation of instance
@@ -39,7 +39,7 @@ def create_node_manger_by_node_info(node_info: NodeInformation,
     :param vote_by_port: Flag decides if master is calculated by PORT or birthtime of node
     :return: created NodeManger
     """
-    message_dict = MessageDict()
+    message_dict = MessageDict(node_info)
     connected_set = synchronized_set.SynchronizedSet(set())
     handshake = Handshake(own_information=node_info, broadcast_address=broadcast_address)
     ping_man = PingMan(own_information=node_info,
@@ -62,6 +62,7 @@ def create_node_manger_by_node_info(node_info: NodeInformation,
     manager.vote_strategy.attach(CMD_CONTROLLER)
     manager.ping_man.attach(CMD_CONTROLLER)
     manager.handshaker.attach(CMD_CONTROLLER)
-    CMD_CONTROLLER.start_input_loop()
+    if human_user:
+        CMD_CONTROLLER.start_input_loop()
 
     return manager

@@ -33,6 +33,7 @@ class CmdController(Observer):
         :return: None
         """
         Thread(target=self.input_loop).start()
+        print('Start input loop')
 
     def input_loop(self):
         running = True
