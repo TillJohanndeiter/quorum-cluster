@@ -4,6 +4,7 @@ handling incoming votes and calculate new master.
 """
 from collections import Counter
 from synchronized_set import SynchronizedSet
+from threading import Lock
 from observer import Observable
 
 from src.beans import NodeInformation, UpdateValue
@@ -25,27 +26,28 @@ class VoteStrategy(Observable):
         self.own_information = own_information
         self.message_dict = message_dict
         self.voting_dict = dict()
+        self.lock = Lock()
 
     def calc_new_master_and_add_message(self, connected: SynchronizedSet, lost: SynchronizedSet,
-                                        dispatched: SynchronizedSet):
+                                        dispatched: SynchronizedSet, node_info):
         """
         :param connected: set of currently connected nodes
         :param lost: set of currently lost node
         :param dispatched: set of currently dispatched nodes
         :return: None
         """
-        copy_connected = connected.copy()
-        copy_connected.add(self.own_information)
-        voted_for = self._get_best_node(copy_connected)
+        all_nodes = connected.copy()
+        all_nodes.add(self.own_information)
+        voted_for = self._get_best_node(all_nodes)
         self.notify(UpdateValue(VOTE_FOR, voted_for))
         self.message_dict.add_vote(voted_node=voted_for,
                                    own_info=self.own_information,
                                    node_information=connected)
         self.voting_dict[self.own_information] = voted_for
-        self.__eval_votes_and_make_new_master(SynchronizedSet(copy_connected), dispatched, lost)
+        self.__eval_votes_and_make_new_master(SynchronizedSet(all_nodes), dispatched, lost, node_info)
 
     def vote_for(self, voted_from, voted_node, connected: SynchronizedSet, lost: SynchronizedSet,
-                 dispatched: SynchronizedSet):
+                 dispatched: SynchronizedSet, own_info):
         """
         Handle incoming vote by adding vote to voting dict and calculate master.
         :param voted_from: Node who send vote
@@ -55,30 +57,51 @@ class VoteStrategy(Observable):
         :param dispatched: Set of Nodes which are dispatched
         :return: None
         """
+        self.lock.acquire()
         self.voting_dict[voted_from] = voted_node
-        copy_connected = connected.copy()
-        copy_connected.add(self.own_information)
-        self.__eval_votes_and_make_new_master(SynchronizedSet(copy_connected), dispatched, lost)
+        self.lock.release()
+        all_nodes = connected.copy()
+        all_nodes.add(self.own_information)
+        self.__eval_votes_and_make_new_master(SynchronizedSet(all_nodes), dispatched, lost, own_info)
 
     def _get_best_node(self, nodes: [NodeInformation]) -> NodeInformation:
         raise NotImplementedError("Warning: Used abstract class VoteStrategy")
 
-    def __eval_votes_and_make_new_master(self, copy_connected: SynchronizedSet,
+    def __eval_votes_and_make_new_master(self, all_nodes: SynchronizedSet,
                                          dispatched: SynchronizedSet,
-                                         lost: SynchronizedSet):
+                                         lost: SynchronizedSet, own_info):
+
+        voted_for = self._get_best_node(all_nodes)
+        self.lock.acquire()
+        self.voting_dict[self.own_information] = voted_for
+        self.lock.release()
+
 
         for node in lost:
             if node in self.voting_dict:
+                print('{} removed {} from voting dict'.format(self.own_information.name, node.name))
                 self.voting_dict.pop(node)
         for node in dispatched:
             if node in self.voting_dict:
+                print('{} removed {} from voting dict'.format(self.own_information.name, node.name))
                 self.voting_dict.pop(node)
 
-        if SynchronizedSet(self.voting_dict.keys()).issuperset(copy_connected):
+        if own_info.name == 'dieter':
+            bla = ''
+            for node in self.voting_dict.keys():
+                bla += '{} voted for {} \n'.format(node.name, self.voting_dict[node].name)
+
+            print('In voting dict are: \n' + bla)
+
+        if SynchronizedSet(self.voting_dict.keys()).issuperset(all_nodes):
+
+
             occurrence_count = Counter(list(self.voting_dict.values()))
             master = occurrence_count.most_common(1)[0][0]
+            if own_info.name == 'dieter':
+                print('No all voted new master is: {}'.format(master.name))
             self.notify(UpdateValue(NEW_MASTER, master))
-            if occurrence_count.most_common(1)[0][1] < len(copy_connected) / 2:
+            if occurrence_count.most_common(1)[0][1] < len(all_nodes) / 2:
                 self.notify(UpdateValue(NO_MAJORITY_SHUTDOWN))
             self.voting_dict.clear()
 

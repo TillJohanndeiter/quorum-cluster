@@ -3,6 +3,7 @@ image: "python:3.7"
 before_script:
   - python --version
   - pip install -r requirements
+  - pip install pylint-fail-under
   - pip install git+https://github.com/FrederikBjorne/python-observer
 
 stages:
@@ -13,7 +14,7 @@ pylint:
   stage: Static Analysis
   allow_failure: true
   script:
-  - pylint -d C0301 src/*.py
+  - pylint-fail-under --fail_under 8.0 C0301 src/*.py
 
 pytest:
   stage: Test

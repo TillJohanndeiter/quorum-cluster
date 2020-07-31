@@ -41,20 +41,24 @@ class NodeManger(Observer):
         self.running = False
 
     def start(self):
+
         """
         Start instance of PingMan and Handshake. After that it will calculate init
         master.
         :return: None
         """
-        self.running = True
-        time.sleep(TIME_BETWEEN_HANDSHAKE)
-        self.ping_man.start()
-        time.sleep(TIME_BETWEEN_HANDSHAKE)
-        self.handshaker.start()
-        self.vote_strategy.calc_new_master_and_add_message(
-            self.connected,
-            self.dispatched,
-            self.lost)
+        try:
+            self.running = True
+            time.sleep(TIME_BETWEEN_HANDSHAKE)
+            self.ping_man.start()
+            time.sleep(TIME_BETWEEN_HANDSHAKE)
+            self.handshaker.start()
+            self.vote_strategy.calc_new_master_and_add_message(
+                self.connected,
+                self.dispatched,
+                self.lost, self.own_information)
+        except KeyboardInterrupt:
+            pass
 
     def kill(self):
         """
@@ -123,7 +127,7 @@ class NodeManger(Observer):
         else:
             self.vote_strategy.calc_new_master_and_add_message(self.connected,
                                                                self.dispatched,
-                                                               self.lost)
+                                                               self.lost, self.own_information)
 
     def __handle_messages(self, new_value):
         """
@@ -161,7 +165,7 @@ class NodeManger(Observer):
             self.vote_strategy.vote_for(voted_from, voted_node,
                                         self.connected,
                                         self.dispatched,
-                                        self.lost)
+                                        self.lost, self.own_information)
 
     def __handle_handshake_message(self, node_info):
         """
@@ -174,16 +178,16 @@ class NodeManger(Observer):
             self.message_dict.add_node(node_info)
             self.__remove_node_from_dispatch_if_same_name(node_info)
             self.connected.add(node_info)
-            print('{} add {} to connected len of connected {}. Json: \n {} \n'.format(self.own_information.name,
-                                                                      node_info.name,
-                                                                      len(self.connected), node_info.to_json()))
+            #print('{} add {} to connected len of connected {}. Json {}'.format(self.own_information.name,
+            #                                                          node_info.name,
+            #                                                          len(self.connected), node_info.to_json()))
         if node_info in self.dispatched:
             self.dispatched.remove(node_info)
         if node_info in self.lost:
             self.lost.remove(node_info)
         self.vote_strategy.calc_new_master_and_add_message(self.connected,
                                                            self.dispatched,
-                                                           self.lost)
+                                                           self.lost, self.own_information)
 
     def __handle_dispatch_msg(self, node_info):
         """
@@ -205,7 +209,7 @@ class NodeManger(Observer):
         else:
             self.vote_strategy.calc_new_master_and_add_message(self.connected,
                                                                self.dispatched,
-                                                               self.lost)
+                                                               self.lost, self.own_information)
 
     def __remove_node_from_dispatch_if_same_name(self, node_info):
         """
@@ -232,4 +236,4 @@ class NodeManger(Observer):
             self.connected.add(node_info)
             self.vote_strategy.calc_new_master_and_add_message(self.connected,
                                                                self.dispatched,
-                                                               self.lost)
+                                                               self.lost, self.own_information)

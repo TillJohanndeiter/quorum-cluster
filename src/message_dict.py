@@ -147,6 +147,7 @@ class MessageDict:
             self.dict[node_info].queue.clear()
         self.lock.release()
 
+
     def clear(self):
         """
         Will delete all entries and keys in dict.
