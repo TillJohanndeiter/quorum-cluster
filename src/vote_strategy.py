@@ -43,7 +43,7 @@ class VoteStrategy(Observable):
         self.voting_dict[self.own_information] = voted_for
         self.own_information.wish_master = voted_for
         self.lock.release()
-        self.__eval_votes_and_make_new_master(connected, dispatched, lost)
+        self.__remove_dead_votes_and_eval(connected, dispatched, lost)
 
     def vote_for(self, send_information, connected: SynchronizedSet, lost: SynchronizedSet,
                  dispatched: SynchronizedSet):
@@ -61,24 +61,31 @@ class VoteStrategy(Observable):
         self.lock.acquire()
         self.voting_dict[send_information] = his_wish_master
         self.lock.release()
-        self.__eval_votes_and_make_new_master(connected, dispatched, lost)
+        self.__remove_dead_votes_and_eval(connected, dispatched, lost)
 
     def get_best_node(self, nodes: [NodeInformation]) -> NodeInformation:
         raise NotImplementedError("Warning: Used abstract class VoteStrategy")
 
-    def __eval_votes_and_make_new_master(self, connected: SynchronizedSet,
-                                         dispatched: SynchronizedSet,
-                                         lost: SynchronizedSet):
-
+    def __remove_dead_votes_and_eval(self, connected: SynchronizedSet,
+                                     dispatched: SynchronizedSet,
+                                     lost: SynchronizedSet):
+        """
+        Remove votes from disconnected instances to avoid dead votes
+        then will call help methodcheck_if_all_voted_and_calc_master
+                :param connected: Set of Nodes which are connected
+        :param lost: Set of Nodes which are lost
+        :param dispatched: Set of Nodes which are dispatched
+        :return:
+        """
         for node in lost:
             if node in self.voting_dict:
                 self.voting_dict.pop(node)
         for node in dispatched:
             if node in self.voting_dict:
                 self.voting_dict.pop(node)
-        self.check_if_all_voted_and_calc_master(connected)
+        self.check_if_enough_votes_and_calc_master(connected)
 
-    def check_if_all_voted_and_calc_master(self, connected):
+    def check_if_enough_votes_and_calc_master(self, connected):
 
         if SynchronizedSet(list(self.voting_dict)).issuperset(connected):
 
@@ -102,7 +109,9 @@ class VoteStrategy(Observable):
                 self.notify_vote(most_voted)
 
     def notify_vote(self, most_voted):
+        self.lock.acquire()
         self.notify(UpdateValue(NEW_MASTER, (self.node_manager.master, most_voted)))
+        self.lock.release()
 
 
 class PortStrategy(VoteStrategy):
