@@ -13,7 +13,6 @@ from src.beans import NodeInformation
 DEFAULT_MESSAGE = 'OK'
 DISPATCH_MESSAGE = 'BYE'
 HANDSHAKE_MESSAGE = 'HANDSHAKE'
-VOTE_MESSAGE = 'VOTE'
 JSON_SEPARATOR = ':_:'
 MESSAGE_SEPARATOR = '--__--'
 
@@ -24,9 +23,10 @@ class MessageDict:
     As an underlying data structure a dict which maps NodeInformation to a Queue of Strings is used
     """
 
-    def __init__(self):
+    def __init__(self, own_info : NodeInformation):
         self.dict = dict()
         self.lock = threading.Lock()
+        self.own_info = own_info
 
     def get_next_message(self, node_information: NodeInformation) -> str:
         """
@@ -37,12 +37,12 @@ class MessageDict:
         """
         if node_information in self.dict.keys():
             if self.dict[node_information].empty():
-                return DEFAULT_MESSAGE + JSON_SEPARATOR
+                return DEFAULT_MESSAGE + JSON_SEPARATOR + self.own_info.master.to_json()
             copy = list(self.dict[node_information].queue)
             with self.dict[node_information].mutex:
                 self.dict[node_information].queue.clear()
             return MESSAGE_SEPARATOR.join(copy)
-        return DEFAULT_MESSAGE + JSON_SEPARATOR
+        return DEFAULT_MESSAGE + JSON_SEPARATOR + self.own_info.master.to_json()
 
     def add_message_for_node(self, message: str, target: NodeInformation):
         """
@@ -122,20 +122,6 @@ class MessageDict:
 
         return all_get_message
 
-    def add_vote(self, voted_node: NodeInformation, own_info: NodeInformation,
-                 node_information: synchronized_set.SynchronizedSet):
-        """
-        Add vote message for target node in dictionary.
-        :param voted_node: node voted for master
-        :param own_info: own node information
-        :param node_information: nodes to which message will be send
-        :return: None
-        """
-        for target in node_information.copy():
-            self.add_message_for_node(VOTE_MESSAGE + JSON_SEPARATOR
-                                      + own_info.to_json() + JSON_SEPARATOR + voted_node.to_json(),
-                                      target)
-
     def delete_message_for_node(self, node_info: NodeInformation):
         """
         Will delete all messages for one node in queue.
@@ -146,7 +132,6 @@ class MessageDict:
         if node_info in self.dict.keys():
             self.dict[node_info].queue.clear()
         self.lock.release()
-
 
     def clear(self):
         """

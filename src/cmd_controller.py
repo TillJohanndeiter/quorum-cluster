@@ -11,7 +11,7 @@ from src.handshake import NEW_ENTERING_NODE
 from src.vote_strategy import VOTE_FOR, NEW_MASTER, NO_MAJORITY_SHUTDOWN
 from src.pinger import CONNECTION_LOST, INCOMING_MESSAGE
 from src.message_dict import DEFAULT_MESSAGE, DISPATCH_MESSAGE, \
-    JSON_SEPARATOR, HANDSHAKE_MESSAGE, VOTE_MESSAGE, MESSAGE_SEPARATOR
+    JSON_SEPARATOR, HANDSHAKE_MESSAGE, MESSAGE_SEPARATOR
 
 
 # TODO: Implement dispatching by enter :q
@@ -55,7 +55,6 @@ class CmdController(Observer):
             if event == VOTE_FOR:
                 voted_for = update_value.value
                 print('{} want {} as new master'.format(self.own_information.name, voted_for.name))
-
             elif event == NEW_ENTERING_NODE:
                 node_info = update_value.value
                 if node_info != self.own_information:
@@ -88,10 +87,4 @@ class CmdController(Observer):
                                   'Now are {} nodes connected '.format(self.own_information.name,
                                                                        node_info.name,
                                                                        len(self.node_manger.connected)))
-                    elif subject == VOTE_MESSAGE:
-                        voted_from = node_info
-                        json = message.split(JSON_SEPARATOR)[2]
-                        voted_node = node_information_from_json(json)
-                        print('{} received vote for {} form {}'.format(self.own_information.name,
-                                                                       voted_node.name,
-                                                                       voted_from.name))
+

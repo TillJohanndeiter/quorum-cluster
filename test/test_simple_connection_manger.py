@@ -20,7 +20,7 @@ class StandardNetworkCase(unittest.TestCase):
         alice = create_node_manger_by_node_info(alice_information)
         alice.start()
         time.sleep(2)
-        self.assertEqual(alice.master, alice_information)
+        self.assertEqual(alice.own_information.master, alice_information)
         alice.dispatch()
         alice.kill()
 
@@ -101,8 +101,8 @@ class StandardNetworkCase(unittest.TestCase):
         self.assertEqual(alice.connected, SynchronizedSet({bob_information}))
         self.assertEqual(bob.connected, SynchronizedSet({alice_information}))
         time.sleep(8)
-        self.assertEqual(alice.master, alice_information)
-        self.assertEqual(bob.master, alice_information)
+        self.assertEqual(alice.own_information.master, alice_information)
+        self.assertEqual(bob.own_information.master, alice_information)
 
 
 def set_up_peter_bob_alice(alice_information, bob_information, peter_information, by_port=False):
@@ -114,9 +114,9 @@ def set_up_peter_bob_alice(alice_information, bob_information, peter_information
     :param by_port: flag for using port or time strategy
     :return: None
     """
-    alice = create_node_manger_by_node_info(alice_information, vote_by_port=by_port)
-    bob = create_node_manger_by_node_info(bob_information, vote_by_port=by_port)
-    peter = create_node_manger_by_node_info(peter_information, vote_by_port=by_port)
+    alice = create_node_manger_by_node_info(alice_information, vote_by_port=by_port, debug=True)
+    bob = create_node_manger_by_node_info(bob_information, vote_by_port=by_port, debug=True)
+    peter = create_node_manger_by_node_info(peter_information, vote_by_port=by_port, debug=True)
     alice.start()
     bob.start()
     peter.start()

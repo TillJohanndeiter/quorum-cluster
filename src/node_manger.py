@@ -7,7 +7,7 @@ from synchronized_set import SynchronizedSet
 from observer import Observer
 
 from src.message_dict import MessageDict, DEFAULT_MESSAGE, DISPATCH_MESSAGE, \
-    JSON_SEPARATOR, HANDSHAKE_MESSAGE, VOTE_MESSAGE, MESSAGE_SEPARATOR
+    JSON_SEPARATOR, HANDSHAKE_MESSAGE, MESSAGE_SEPARATOR
 from src.pinger import INCOMING_MESSAGE, CONNECTION_LOST, PingMan
 from src.handshake import NEW_ENTERING_NODE, Handshake
 from src.beans import NodeInformation, node_information_from_json
@@ -37,7 +37,6 @@ class NodeManger(Observer):
         self.lost = SynchronizedSet(set())
         self.vote_strategy = vote_strategy
         self.vote_strategy.attach(self)
-        self.master = None
         self.running = False
 
     def start(self):
@@ -56,7 +55,7 @@ class NodeManger(Observer):
             self.vote_strategy.calc_new_master_and_add_message(
                 self.connected,
                 self.dispatched,
-                self.lost, self.own_information)
+                self.lost)
         except KeyboardInterrupt:
             pass
 
@@ -101,7 +100,7 @@ class NodeManger(Observer):
         elif event == CONNECTION_LOST:
             self.__handle_connection_lost(update_value)
         elif event == NEW_MASTER:
-            self.master = update_value.value
+            self.own_information.master = update_value.value
         elif event == NO_MAJORITY_SHUTDOWN:
             self.dispatch()
 
@@ -127,7 +126,7 @@ class NodeManger(Observer):
         else:
             self.vote_strategy.calc_new_master_and_add_message(self.connected,
                                                                self.dispatched,
-                                                               self.lost, self.own_information)
+                                                               self.lost)
 
     def __handle_messages(self, new_value):
         """
@@ -149,7 +148,10 @@ class NodeManger(Observer):
         """
         subject = msg.split(JSON_SEPARATOR)[0]
         if subject == DEFAULT_MESSAGE:
-            return
+            json = msg.split(JSON_SEPARATOR)[1]
+            node_info = node_information_from_json(json)
+            self.vote_strategy.vote_for(node_info, self.connected,
+                                        self.dispatched, self.lost)
 
         json = msg.split(JSON_SEPARATOR)[1]
         node_info = node_information_from_json(json)
@@ -158,14 +160,6 @@ class NodeManger(Observer):
             self.message_dict.delete_message_for_node(node_info)
         elif subject == HANDSHAKE_MESSAGE:
             self.__handle_handshake_message(node_info)
-        elif subject == VOTE_MESSAGE:
-            voted_from = node_info
-            json = msg.split(JSON_SEPARATOR)[2]
-            voted_node = node_information_from_json(json)
-            self.vote_strategy.vote_for(voted_from, voted_node,
-                                        self.connected,
-                                        self.dispatched,
-                                        self.lost, self.own_information)
 
     def __handle_handshake_message(self, node_info):
         """
@@ -187,7 +181,7 @@ class NodeManger(Observer):
             self.lost.remove(node_info)
         self.vote_strategy.calc_new_master_and_add_message(self.connected,
                                                            self.dispatched,
-                                                           self.lost, self.own_information)
+                                                           self.lost)
 
     def __handle_dispatch_msg(self, node_info):
         """
@@ -209,7 +203,7 @@ class NodeManger(Observer):
         else:
             self.vote_strategy.calc_new_master_and_add_message(self.connected,
                                                                self.dispatched,
-                                                               self.lost, self.own_information)
+                                                               self.lost)
 
     def __remove_node_from_dispatch_if_same_name(self, node_info):
         """
@@ -236,4 +230,4 @@ class NodeManger(Observer):
             self.connected.add(node_info)
             self.vote_strategy.calc_new_master_and_add_message(self.connected,
                                                                self.dispatched,
-                                                               self.lost, self.own_information)
+                                                               self.lost)

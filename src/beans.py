@@ -4,7 +4,7 @@ regarding one node."""
 
 import json
 import time
-
+import copy
 
 class NetAddress:
     """
@@ -47,18 +47,24 @@ class NodeInformation:
     def __init__(self,
                  net_address: NetAddress,
                  birthtime=time.time(),
-                 name=None):
+                 name=None, master = None):
         self.net_address = net_address
         self.birthtime = birthtime
         self.name = name
+        self.master = master
 
     def to_json(self) -> str:
         """
         Convert instance to tuple of host and PORT.
         :return: tuple of host and PORT
         """
-        return json.dumps(self, default=lambda o: o.__dict__,
-                          sort_keys=True, indent=4)
+        copsy = copy.deepcopy(self)
+        master_copy = copy.deepcopy(self.master)
+        if copsy.master is not None:
+            master_copy.master = None
+        copsy.master = master_copy
+        return json.dumps(copsy, default=lambda o: o.__dict__,
+                          sort_keys=True,  indent=4)
 
     def __eq__(self, o: object) -> bool:
         if not isinstance(o, NodeInformation):
@@ -71,7 +77,10 @@ class NodeInformation:
         return hash((self.net_address, self.birthtime, self.name))
 
 
+
+
 def node_information_from_json(json_string) -> NodeInformation:
+
     """
     Deserialized instance of NodeInformation.
     :param json_string: json String of an instance
@@ -81,6 +90,9 @@ def node_information_from_json(json_string) -> NodeInformation:
     net_address = NetAddress(**node_info_dict['net_address'])
     node_info_obj = NodeInformation(**node_info_dict)
     node_info_obj.net_address = net_address
+    if (node_info_dict['master']) is not None:
+        node_info_obj.master = NodeInformation(**node_info_dict['master'])
+        node_info_obj.master.net_address = NetAddress(**node_info_dict['master']['net_address'])
     return node_info_obj
 
 

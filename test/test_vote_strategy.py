@@ -20,7 +20,7 @@ class VoteStrategyCase(unittest.TestCase):
         :return: None
         """
         port_strategy = PortStrategy(None, None)
-        result = port_strategy._get_best_node(all_information)
+        result = port_strategy.get_best_node(all_information)
         self.assertEqual(result, alice_information)
 
     def test_time_strategy(self):
@@ -29,7 +29,7 @@ class VoteStrategyCase(unittest.TestCase):
         :return:
         """
         port_strategy = TimeStrategy(None, None)
-        result = port_strategy._get_best_node(all_information)
+        result = port_strategy.get_best_node(all_information)
         self.assertEqual(result, peter_information)
 
 
