@@ -69,7 +69,7 @@ class MessageDictTestCase(unittest.TestCase):
         message_dict.add_message_for_node("test", alice_information)
         nextMsg = message_dict.get_next_message(alice_information)
         self.assertEqual('test', nextMsg)
-        self.assertEqual(DEFAULT_MESSAGE + JSON_SEPARATOR + peter_information.to_json(), message_dict.get_next_message(alice_information))
+        self.assertEqual(DEFAULT_MESSAGE + JSON_SEPARATOR + bob_information.to_json(), message_dict.get_next_message(alice_information))
 
     def test_wait_unit_all_received(self):
         """
