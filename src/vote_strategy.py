@@ -32,6 +32,9 @@ class VoteStrategy(Observable):
     def calc_new_master(self, connected: SynchronizedSet, lost: SynchronizedSet,
                         dispatched: SynchronizedSet):
         """
+        calculate new master by using template method. Then will add
+        wish master to voting dict and set votes to own information so
+        other nodes will get info during default message
         :param connected: set of currently connected nodes
         :param lost: set of currently lost node
         :param dispatched: set of currently dispatched nodes
@@ -48,7 +51,8 @@ class VoteStrategy(Observable):
     def vote_for(self, send_information, connected: SynchronizedSet, lost: SynchronizedSet,
                  dispatched: SynchronizedSet):
         """
-        Handle incoming vote by adding vote to voting dict and calculate wish_master.
+        Handle incoming vote by adding vote to voting dict and calculate wish_master
+        and add own wish to dict.
         :param send_information: Node who send vote
         :param voted_node: Node which was voted
         :param connected: Set of Nodes which are connected
@@ -71,7 +75,7 @@ class VoteStrategy(Observable):
                                      lost: SynchronizedSet):
         """
         Remove votes from disconnected instances to avoid dead votes
-        then will call help methodcheck_if_all_voted_and_calc_master
+        then will call help method check_if_all_voted_and_calc_master
                 :param connected: Set of Nodes which are connected
         :param lost: Set of Nodes which are lost
         :param dispatched: Set of Nodes which are dispatched
@@ -86,6 +90,14 @@ class VoteStrategy(Observable):
         self.check_if_enough_votes_and_calc_master(connected)
 
     def check_if_enough_votes_and_calc_master(self, connected):
+        """
+        First check if votes from all connected nodes are in dict and
+        will then calculate the majority. If majority is not absolute,
+        observer get a shutdown notification if in minority. Else
+        will notify observer about new master
+        :param connected: set of connected notes
+        :return: None
+        """
 
         if SynchronizedSet(list(self.voting_dict)).issuperset(connected):
 
@@ -109,6 +121,11 @@ class VoteStrategy(Observable):
                 self.notify_vote(most_voted)
 
     def notify_vote(self, most_voted):
+        """
+        Send update to observer with lock to avoid multiple executions of python scripts.
+        :param most_voted: winner of election
+        :return: None
+        """
         self.lock.acquire()
         self.notify(UpdateValue(NEW_MASTER, (self.node_manager.master, most_voted)))
         self.lock.release()

@@ -21,6 +21,7 @@ class MessageDict:
     """
     Dataclass is used as dictionary to know what messages will be send during next ping.
     As an underlying data structure a dict which maps NodeInformation to a Queue of Strings is used
+    As format for node information json is used.
     """
 
     def __init__(self, own_info : NodeInformation):
@@ -31,7 +32,7 @@ class MessageDict:
     def get_next_message(self, node_information: NodeInformation) -> str:
         """
         Return concatenated messages in Queue. If Queue of node is empty default string
-        (OK) will be returned.
+        with Ok and own information with master wish.
         :param node_information: node to which messages will be send
         :return: concatenated messages separated by MESSAGE_SEPARATOR or default string
         """

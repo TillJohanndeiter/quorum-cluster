@@ -42,8 +42,8 @@ class NodeManger(Observer):
     def start(self):
 
         """
-        Start instance of PingMan and Handshake. After that it will calculate init
-        wish_master.
+        Will calculate init wish_master. Start instance of PingMan and Handshake.
+        After that will start pingman and handshaker
         :return: None
         """
         self.vote_strategy.calc_new_master(self.connected, self.dispatched, self.lost)
